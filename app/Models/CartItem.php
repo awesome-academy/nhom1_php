@@ -53,5 +53,6 @@ class CartItem extends Model
         $price = $this->product->price + ($this->productVariant?->extra_price ?? 0);
 
         return (float) $price * $this->quantity;
+
     }
 }
