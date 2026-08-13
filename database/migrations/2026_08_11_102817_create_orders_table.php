@@ -16,7 +16,11 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->decimal('total_amount', 12, 2);
             $table->string('status')->default('pending'); // Dùng Native Enum casting ở Model
+            $table->text('note')->nullable();
             $table->timestamps();
+
+            $table->index('status');
+            $table->index('created_at');
         });
     }
 
