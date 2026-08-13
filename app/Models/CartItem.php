@@ -48,11 +48,10 @@ class CartItem extends Model
 
     public function lineTotal(): float
     {
-    $this->loadMissing('product', 'productVariant');
+        $this->loadMissing('product', 'productVariant');
 
-    // Ưu tiên lấy giá của variant nếu có, nếu không thì lấy giá product gốc
-    $price = $this->productVariant?->price ?? $this->product->price;
+        $price = $this->product->price + ($this->productVariant?->extra_price ?? 0);
 
-    return (float) $price * $this->quantity;
+        return (float) $price * $this->quantity;
     }
 }
