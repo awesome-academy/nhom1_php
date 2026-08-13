@@ -24,8 +24,10 @@ class Cart extends Model
 
     public function total(): float
     {
+
         $this->loadMissing('items.product', 'items.productVariant');
 
         return (float) $this->items->sum(fn (CartItem $item) => $item->lineTotal());
+
     }
 }
