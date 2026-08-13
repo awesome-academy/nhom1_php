@@ -13,17 +13,19 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            
-            // Self-referencing FK
             $table->foreignId('parent_id')
-                  ->nullable()
-                  ->constrained('categories')
-                  ->nullOnDelete();
-                  
+              ->nullable()
+              ->constrained('categories')
+              ->nullOnDelete();
+              
+            $table->string('name', 100);
+            $table->string('slug', 120)->unique();
+            $table->text('description')->nullable();
+        
             $table->timestamps();
-            $table->softDeletes();
+
+        // Đánh index theo đúng yêu cầu thiết kế
+            $table->index('parent_id');
         });
     }
 
