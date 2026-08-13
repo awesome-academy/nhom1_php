@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('product_variants', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
-            $table->string('name');
-            $table->decimal('price', 12, 2);
-            $table->string('type'); // Dùng Native Enum casting ở Model ('drink', 'food')
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->string('name', 100);
+            $table->string('variant_group'); // Native Enum casting ở Model (VariantGroup)
+            $table->decimal('extra_price', 10, 2)->default(0);
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('product_variants');
     }
 };
