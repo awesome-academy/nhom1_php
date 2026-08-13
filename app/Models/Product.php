@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProductType;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
@@ -13,6 +14,7 @@ class Product extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'type'      => ProductType::class,
     ];
 
    

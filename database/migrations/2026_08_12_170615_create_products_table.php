@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name', 150);
             $table->string('slug', 170)->unique();
             $table->text('description')->nullable();
-            $table->enum('type', ['food', 'drink']);
+            $table->string('type'); // Native Enum casting ở Model (ProductType)
             $table->decimal('price', 10, 2);
             $table->unsignedInteger('stock_quantity')->default(0);
             $table->boolean('is_active')->default(true);

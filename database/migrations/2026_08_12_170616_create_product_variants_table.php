@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->string('name', 100);
-            $table->enum('variant_group', ['size', 'sugar', 'ice', 'topping']);
+            $table->string('variant_group'); // Native Enum casting ở Model (VariantGroup)
             $table->decimal('extra_price', 10, 2)->default(0);
             $table->timestamps();
         });
