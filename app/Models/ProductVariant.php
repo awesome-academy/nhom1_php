@@ -12,5 +12,18 @@ class ProductVariant extends Model
     protected $casts = [
         'variant_group' => VariantGroup::class,
     ];
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }
