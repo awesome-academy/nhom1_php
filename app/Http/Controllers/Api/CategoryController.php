@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CategoryResource;
@@ -15,7 +15,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class CategoryController extends Controller
 {
     /**
-     * GET /api/v1/categories
+     * GET /api/categories
      *
      * Trả về danh sách tất cả danh mục dưới dạng cây cha-con.
      * Chỉ query các danh mục gốc (parent_id IS NULL) và eager load
@@ -31,7 +31,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * GET /api/v1/categories/{id}
+     * GET /api/categories/{id}
      *
      * Trả về thông tin chi tiết của 1 danh mục theo ID,
      * kèm danh mục cha (nếu có) và danh sách con trực tiếp.
@@ -50,7 +50,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * GET /api/v1/categories/{id}/products
+     * GET /api/categories/{id}/products
      *
      * Trả về danh sách sản phẩm thuộc danh mục này và toàn bộ cây con.
      * Dùng BFS để lấy tất cả descendant category IDs, sau đó
@@ -68,7 +68,7 @@ class CategoryController extends Controller
 
         $categoryIds = $category->getAllDescendantIds();
 
-        $perPage  = min((int) $request->query('per_page', 15), 100);
+        $perPage = min((int) $request->query('per_page', 15), 100);
 
         $products = Product::whereIn('category_id', $categoryIds)
             ->where('is_active', true)

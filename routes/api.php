@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
-use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\CategoryController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -14,8 +14,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
 });
 
 // Categories (Public)
-Route::prefix('v1')->group(function () {
-    Route::get('/categories',               [CategoryController::class, 'index']);
-    Route::get('/categories/{id}',          [CategoryController::class, 'show']);
-    Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
-});
+Route::get('/categories',               [CategoryController::class, 'index']);
+Route::get('/categories/{id}',          [CategoryController::class, 'show']);
+Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
