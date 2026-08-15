@@ -1,5 +1,3 @@
-<!-- User Login -->
-
 <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -45,26 +43,5 @@
                 {{ __('Log in') }}
             </x-primary-button>
         </div>
-
-        <div class="mt-4">
-            <a href="{{ route('social.redirect', 'google') }}">
-                Continue with Google
-            </a>
-        </div>
-
-
-        <div class="mt-2">
-            <a href="{{ route('social.redirect', 'facebook') }}">
-                Continue with Facebook
-            </a>
-        </div>
-
-
-        <div class="mt-2">
-            <a href="{{ route('social.redirect', 'twitter') }}">
-                Continue with Twitter
-            </a>
-        </div>
     </form>
-    
 </x-guest-layout>

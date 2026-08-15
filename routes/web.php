@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Auth\SocialAuthController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -17,6 +17,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::prefix('auth')->group(function () {
+    Route::get('/{provider}/redirect', [SocialAuthController::class, 'redirectToProvider'])
+        ->name('social.redirect');
+    
+    Route::get('/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback'])
+        ->name('social.callback');
 });
 
 require __DIR__.'/auth.php';
