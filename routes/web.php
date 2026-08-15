@@ -5,11 +5,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialAuthController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('user/welcome');
 });
 
 Route::get('/dashboard', function () {
     return view('dashboard');
+    
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Authenticated routes for profile management
@@ -28,3 +29,4 @@ Route::prefix('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+require __DIR__.'/admin.php';

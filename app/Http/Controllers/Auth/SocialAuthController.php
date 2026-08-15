@@ -2,76 +2,105 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use App\Models\SocialAccount;
 use App\Models\User;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Http\RedirectResponse;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
 
 
 class SocialAuthController extends Controller
 {
-    private array $providers = ['facebook', 'google', 'twitter'];
+    /**
+     * @var array<int, string>
+     */
+    private const PROVIDERS = ['facebook', 'google', 'twitter'];
 
-    public function redirectToProvider($provider)
+    public function redirectToProvider(string $provider): RedirectResponse
     {
-        abort_unless(in_array($provider, $this->providers), 404);
+        abort_unless(in_array($provider, self::PROVIDERS), 404);
+        
         return Socialite::driver($provider)->redirect();
     }
 
-    public function handleProviderCallback($provider)
+    public function handleProviderCallback(string $provider): RedirectResponse
     {
-        abort_unless(in_array($provider, $this->providers), 404);
-
-        // $socialUser = Socialite::driver($provider)->user();
+        abort_unless(in_array($provider, self::PROVIDERS), 404);
 
         try {
             $socialUser = Socialite::driver($provider)->user();
         } catch (Throwable $e) {
-            return redirect()->route('login')->withErrors([
-                'email' => 'Xác thực qua ' . ucfirst($provider) . ' thất bại hoặc phiên làm việc đã hết hạn. Vui lòng thử lại.',
+            return redirect()->route('login')
+                            ->withErrors(['email' => 'Xác thực qua ' . ucfirst($provider) . ' thất bại hoặc phiên làm việc đã hết hạn. Vui lòng thử lại.',
             ]);
         }
 
         // kiểm tra provider đã liên kết chưa
-        $socialAccount = SocialAccount::where([
-            'provider' => $provider,
-            'provider_id' => $socialUser->getId(),
-        ])->first();
+        $socialAccount = SocialAccount::where('provider', $provider)
+            ->where('provider_id', $socialUser->getId())
+            ->first();
 
         if ($socialAccount) {
+            if ($denied = $this->denyIfAdmin($socialAccount->user)) {
+                return $denied;
+            }
 
-            Auth::login($socialAccount->user);
+            $socialAccount->update(['access_token' => $socialUser->token]);
 
-            return redirect()->route('home');
+            return $this->login($socialAccount->user);
         }
 
         // kiểm tra email
-        $user = User::where('email', $socialUser->getEmail())->first();
+        $email = $socialUser->getEmail();
 
-        if (!$user) {
+        if((empty($email))){
+            $username = $socialUser->getNickname() ?? $socialUser->getId();
+            $email = "{$username}@twitter.local";
+        }
 
+        $user = User::where('email', $email)->first();
+
+        if ($user && ($denied = $this->denyIfAdmin($user))) {
+            return $denied;
+        }
+
+        if (! $user) {
             $user = User::create([
-                'name' => $socialUser->getName() ?? $socialUser->getNickname(),
-                'email' => $socialUser->getEmail(),
-                'password' => bcrypt(Str::random(16)),
+                'name' => $socialUser->getName() ?: ($socialUser->getNickname() ?: Str::before($email, '@')),
+                'email' => $email,
+                'password' => bcrypt(Str::random(40)),
                 'role' => 'user',
+                'email_verified_at' => now(),
             ]);
         }
 
-        SocialAccount::create([
-            'user_id' => $user->id,
+        $user->socialAccounts()->create([
             'provider' => $provider,
             'provider_id' => $socialUser->getId(),
             'access_token' => $socialUser->token,
         ]);
 
+        return $this->login($user);
+    }
+
+    private function denyIfAdmin(User $user): ?RedirectResponse {
+        if ($user->role !== 'admin') {
+            return null;
+        }
+
+        return redirect()->route('login')->withErrors([
+            'email' => 'Tài khoản quản trị viên không thể đăng nhập qua mạng xã hội.',
+        ]);
+    }
+
+    private function login(User $user): RedirectResponse {
         Auth::login($user);
 
-        return redirect()->route('home');
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 }
