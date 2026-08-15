@@ -33,15 +33,4 @@ class CartController extends Controller
 
         return new CartResource($cart);
     }
-
-    public function updateItem(UpdateCartItemRequest $request, int $id): CartResource
-    {
-        $cart = CartService::updateItemQuantity(
-            userId: $request->user()->id,
-            itemId: $id,
-            quantity: $request->integer('quantity'),
-        );
-
-        return new CartResource($cart);
-    }
 }
