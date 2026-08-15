@@ -11,13 +11,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ProductController extends Controller
 {
-    /**
-     * GET /api/products
-     *
-     * Danh sách sản phẩm đang hoạt động.
-     * Eager load: ảnh đại diện (primaryImage) + danh mục (category).
-     * Chưa có filter, sort, pagination theo yêu cầu Task #98903.
-     */
+
     public function index(): AnonymousResourceCollection
     {
         $products = Product::where('is_active', true)
@@ -27,13 +21,7 @@ class ProductController extends Controller
         return ProductListResource::collection($products);
     }
 
-    /**
-     * GET /api/products/{id}
-     *
-     * Chi tiết 1 sản phẩm đang hoạt động.
-     * Eager load: toàn bộ album ảnh (images) + tất cả biến thể (variants) + danh mục (category).
-     * Chưa có average rating (thuộc Task #98905).
-     */
+
     public function show(int $id): ProductDetailResource|JsonResponse
     {
         $product = Product::where('is_active', true)
