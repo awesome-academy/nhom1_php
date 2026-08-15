@@ -15,11 +15,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
 });
 
 // Categories (Public)
-Route::get('/categories',               [CategoryController::class, 'index']);
-Route::get('/categories/{id}',          [CategoryController::class, 'show']);
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
 
-// Products (Public) — Task #98903
-// Note: /products/{id}/ratings thuộc Task #98905, không khai báo ở đây
-Route::get('/products',      [ProductController::class, 'index']);
+// Products (Public)
+Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
