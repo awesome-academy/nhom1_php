@@ -11,5 +11,4 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('/cart', [CartController::class, 'show']);
     Route::post('/cart/items', [CartController::class, 'storeItem']);
-    Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
 });
