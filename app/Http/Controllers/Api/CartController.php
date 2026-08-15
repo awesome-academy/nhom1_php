@@ -17,4 +17,21 @@ class CartController extends Controller
 
         return new CartResource($cart);
     }
+
+    public function destroyItem(Request $request, int $id): CartResource
+    {
+        $cart = CartService::removeItem(
+            userId: $request->user()->id,
+            itemId: $id,
+        );
+
+        return new CartResource($cart);
+    }
+
+    public function clear(Request $request): CartResource
+    {
+        $cart = CartService::clearCart($request->user()->id);
+
+        return new CartResource($cart);
+    }
 }
