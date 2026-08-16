@@ -79,16 +79,23 @@ class CartService
         return $cart;
     }
 
-    public static function updateItemQuantity(int $userId, int $itemId, int $quantity): Cart
-    {
+    public static function updateItemQuantity(
+        int $userId,
+        int $itemId,
+        int $quantity
+    ): Cart {
         $item = CartItem::query()
             ->whereKey($itemId)
-            ->whereHas('cart', fn ($query) => $query->where('user_id', $userId))
+            ->whereHas(
+                'cart',
+                fn ($query) => $query->where('user_id', $userId)
+            )
             ->with(['product', 'cart'])
             ->first();
 
         if (! $item) {
-            throw (new ModelNotFoundException())->setModel(CartItem::class, [$itemId]);
+            throw (new ModelNotFoundException())
+                ->setModel(CartItem::class, [$itemId]);
         }
 
         $product = $item->product;
