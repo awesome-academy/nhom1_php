@@ -6,6 +6,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 
 class CartService
@@ -73,6 +74,47 @@ class CartService
             ]);
         }
 
+        $cart->load(['items.product', 'items.productVariant']);
+
+        return $cart;
+    }
+
+    public static function updateItemQuantity(
+        int $userId,
+        int $itemId,
+        int $quantity
+    ): Cart {
+        $item = CartItem::query()
+            ->whereKey($itemId)
+            ->whereHas(
+                'cart',
+                fn ($query) => $query->where('user_id', $userId)
+            )
+            ->with(['product', 'cart'])
+            ->first();
+
+        if (! $item) {
+            throw (new ModelNotFoundException())
+                ->setModel(CartItem::class, [$itemId]);
+        }
+
+        $product = $item->product;
+
+        if (! $product || ! $product->is_active) {
+            throw ValidationException::withMessages([
+                'product_id' => ['Product is not available.'],
+            ]);
+        }
+
+        if ($quantity > $product->stock_quantity) {
+            throw ValidationException::withMessages([
+                'quantity' => ['Not enough stock for this product.'],
+            ]);
+        }
+
+        $item->update(['quantity' => $quantity]);
+
+        $cart = $item->cart;
         $cart->load(['items.product', 'items.productVariant']);
 
         return $cart;

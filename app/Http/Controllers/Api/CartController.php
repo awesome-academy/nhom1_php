@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AddCartItemRequest;
+use App\Http\Requests\UpdateCartItemRequest;
 use App\Http\Resources\CartResource;
 use App\Services\CartService;
 use Illuminate\Http\Request;
@@ -27,6 +28,17 @@ class CartController extends Controller
             variantId: $request->filled('product_variant_id')
                 ? $request->integer('product_variant_id')
                 : null,
+            quantity: $request->integer('quantity'),
+        );
+
+        return new CartResource($cart);
+    }
+
+    public function updateItem(UpdateCartItemRequest $request, int $id): CartResource
+    {
+        $cart = CartService::updateItemQuantity(
+            userId: $request->user()->id,
+            itemId: $id,
             quantity: $request->integer('quantity'),
         );
 
