@@ -72,7 +72,7 @@ Sau khi sinh key, mở file `.env` vừa tạo và điền các giá trị thôn
 | **`SLACK_ORDER_WEBHOOK_URL`**         | Tạo tại Slack App $\rightarrow$ Incoming Webhooks, dán URL webhook của room chung team                          |
 | **`MAIL_USERNAME` / `MAIL_PASSWORD**` | Đăng ký tài khoản free tại [mailtrap.io](https://mailtrap.io) $\rightarrow$ Lấy SMTP credentials của inbox test |
 
-> **Lưu ý Social Provider:** Khai báo chính xác **Redirect URI** trên từng Developer Console tương ứng với giá trị định sẵn trong `.env.example` (Ví dụ: `http://localhost:8000/api/v1/auth/facebook/callback`).
+> **Lưu ý Social Provider:** Khai báo chính xác **Redirect URI** trên từng Developer Console tương ứng với giá trị định sẵn trong `.env.example` (Ví dụ: `http://localhost:8000/auth/facebook/callback`).
 
 ---
 
