@@ -16,6 +16,7 @@ class CartService
         return Cart::firstOrCreate(['user_id' => $userId]);
     }
 
+    // 98913 - Add product to cart
     public static function addItem(
         int $userId,
         int $productId,
@@ -79,6 +80,7 @@ class CartService
         return $cart;
     }
 
+    // 98914 - Update cart item quantity
     public static function updateItemQuantity(
         int $userId,
         int $itemId,
@@ -115,6 +117,40 @@ class CartService
         $item->update(['quantity' => $quantity]);
 
         $cart = $item->cart;
+        $cart->load(['items.product', 'items.productVariant']);
+
+        return $cart;
+    }
+
+    // 98915 - Remove cart item
+    public static function removeItem(int $userId, int $itemId): Cart
+    {
+        $cart = self::getOrCreateForUser($userId);
+
+        $item = CartItem::query()
+            ->whereKey($itemId)
+            ->where('cart_id', $cart->id)
+            ->first();
+
+        if (! $item) {
+            throw (new ModelNotFoundException())
+                ->setModel(CartItem::class, [$itemId]);
+        }
+
+        $item->delete();
+
+        $cart->load(['items.product', 'items.productVariant']);
+
+        return $cart;
+    }
+
+    // 98915 - Clear cart
+    public static function clearCart(int $userId): Cart
+    {
+        $cart = self::getOrCreateForUser($userId);
+
+        $cart->items()->delete();
+
         $cart->load(['items.product', 'items.productVariant']);
 
         return $cart;

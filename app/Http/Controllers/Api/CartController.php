@@ -20,6 +20,7 @@ class CartController extends Controller
         return new CartResource($cart);
     }
 
+    // 98913 - Add product to cart
     public function storeItem(AddCartItemRequest $request): CartResource
     {
         $cart = CartService::addItem(
@@ -34,6 +35,7 @@ class CartController extends Controller
         return new CartResource($cart);
     }
 
+    // 98914 - Update cart item quantity
     public function updateItem(UpdateCartItemRequest $request, int $id): CartResource
     {
         $cart = CartService::updateItemQuantity(
@@ -41,6 +43,25 @@ class CartController extends Controller
             itemId: $id,
             quantity: $request->integer('quantity'),
         );
+
+        return new CartResource($cart);
+    }
+
+    // 98915 - Remove cart item
+    public function destroyItem(Request $request, int $id): CartResource
+    {
+        $cart = CartService::removeItem(
+            userId: $request->user()->id,
+            itemId: $id,
+        );
+
+        return new CartResource($cart);
+    }
+
+    // 98915 - Clear cart
+    public function clear(Request $request): CartResource
+    {
+        $cart = CartService::clearCart($request->user()->id);
 
         return new CartResource($cart);
     }
