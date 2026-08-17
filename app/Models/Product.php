@@ -5,9 +5,12 @@ namespace App\Models;
 use App\Enums\ProductType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'category_id',
         'name',
@@ -23,6 +26,7 @@ class Product extends Model
         'is_active' => 'boolean',
         'type' => ProductType::class,
     ];
+
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -36,6 +40,11 @@ class Product extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class);
+    }
+
+    public function primaryImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('is_primary', true);
     }
 
     public function ratings()
