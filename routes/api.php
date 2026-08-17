@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
-use App\Http\Controllers\Auth\SocialAuthController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -33,3 +32,4 @@ Route::get('/categories/{id}/products', [CategoryController::class, 'products'])
 // Products (Public)
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
+Route::get('/products/{id}/ratings', [ProductController::class, 'ratings']);
