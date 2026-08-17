@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Admin\AdminAuthenticatedSessionController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AdminUserController;
+
+
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +29,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', AdminMiddleware::class])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
+
+        // User management.
+        Route::get('users', [AdminUserController::class, 'index'])
+            ->name('users.index');
+        Route::get('users/{user}/edit', [AdminUserController::class, 'edit'])
+            ->name('users.edit');
+        Route::put('users/{user}', [AdminUserController::class, 'update'])
+            ->name('users.update');
+        Route::delete('users/{user}', [AdminUserController::class, 'destroy'])
+            ->name('users.destroy');
 
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
