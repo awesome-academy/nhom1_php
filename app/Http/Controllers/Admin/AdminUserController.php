@@ -3,62 +3,76 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-class AdminProfileController extends Controller
+class AdminUserController extends Controller
 {
     /**
-     * Display the admin's profile form.
+     * Display a listing of all users, with basic search and role filtering.
      */
-    public function edit(Request $request): View
+    public function index(Request $request): View
     {
-        return view('admin.profile.edit', [
-            'user' => $request->user(),
+        $users = User::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->string('search');
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('role'), fn ($query) => $query->where('role', $request->string('role')))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.users.index', [
+            'users' => $users,
         ]);
     }
 
     /**
-     * Update the admin's profile information.
+     * Show the form for editing a user.
      */
-    public function update(Request $request): RedirectResponse
+    public function edit(User $user): View
+    {
+        return view('admin.users.edit', [
+            'targetUser' => $user,
+        ]);
+    }
+
+    /**
+     * Update a user's basic info and role.
+     */
+    public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'role' => ['required', 'in:admin,user'],
         ]);
 
-        $request->user()->update($validated);
+        $user->update($validated);
 
         return redirect()
-            ->route('admin.profile.edit')
-            ->with('success', 'Hồ sơ quản trị viên đã được cập nhật.');
+            ->route('admin.users.index')
+            ->with('success', 'Cập nhật người dùng thành công.');
     }
 
     /**
-     * Quick avatar-only update, used by the camera icon on the admin profile page.
+     * Remove a user from the system.
      */
-    public function updateAvatar(Request $request): RedirectResponse
+    public function destroy(User $user): RedirectResponse
     {
-        $request->validate([
-            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ]);
+        abort_if($user->role === 'admin', 403, 'Không thể xoá tài khoản quản trị viên.');
 
-        /** @var \App\Models\User $user */
-        $user = $request->user();
-
-        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-            Storage::disk('public')->delete($user->avatar);
-        }
-
-        $user->update([
-            'avatar' => $request->file('avatar')->store('avatars', 'public'),
-        ]);
+        $user->delete();
 
         return redirect()
-            ->route('admin.profile.edit')
-            ->with('success', 'Ảnh đại diện đã được cập nhật.');
+            ->route('admin.users.index')
+            ->with('success', 'Đã xoá người dùng.');
     }
 }

@@ -19,14 +19,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::middleware('guest')->group(function () {
+    Route::middleware('guest:admin')->group(function () {
         Route::get('login', [AdminAuthenticatedSessionController::class, 'create'])
             ->name('login');
 
         Route::post('login', [AdminAuthenticatedSessionController::class, 'store']);
     });
 
-    Route::middleware(['auth', AdminMiddleware::class])->group(function () {
+    Route::middleware(['auth:admin', AdminMiddleware::class])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
 
