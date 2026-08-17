@@ -13,25 +13,27 @@ class AdminUserController extends Controller
     /**
      * Display a listing of all users, with basic search and role filtering.
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
-        $users = User::query()
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = $request->string('search');
+        $query = User::where('role', 'user');
 
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->filled('role'), fn ($query) => $query->where('role', $request->string('role')))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
 
-        return view('admin.users.index', [
-            'users' => $users,
-        ]);
+        match ($request->input('sort')) {
+            'oldest'   => $query->oldest(),
+            'name_asc' => $query->orderBy('name', 'asc'),
+            default    => $query->latest(),
+        };
+
+        $users = $query->paginate(10);
+
+        return view('admin.users.index', compact('users'));
     }
 
     /**
@@ -67,8 +69,6 @@ class AdminUserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
-        abort_if($user->role === 'admin', 403, 'Không thể xoá tài khoản quản trị viên.');
-
         $user->delete();
 
         return redirect()
