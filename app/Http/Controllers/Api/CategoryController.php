@@ -23,7 +23,6 @@ class CategoryController extends Controller
         return CategoryTreeResource::collection($categories);
     }
 
-
     public function show(int $id): CategoryResource|JsonResponse
     {
         $category = Category::with(['parent', 'children'])->find($id);
@@ -36,7 +35,6 @@ class CategoryController extends Controller
 
         return new CategoryResource($category);
     }
-
 
     public function products(int $id, Request $request): AnonymousResourceCollection|JsonResponse
     {
