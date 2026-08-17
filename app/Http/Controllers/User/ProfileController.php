@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use App\Http\Controllers\Controller; 
+use App\Http\Controllers\Controller;
 
 class ProfileController extends Controller
 {
@@ -28,7 +28,7 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-      /** @var \App\Models\User $user */
+        /** @var \App\Models\User $user */
         $user = $request->user();
         $data = $request->validated();
 
@@ -45,6 +45,31 @@ class ProfileController extends Controller
         return redirect()
             ->route('profile.edit')
             ->with('success', 'Hồ sơ đã được cập nhật thành công.');
+    }
+
+    /**
+     * Quick avatar-only update, used by the camera icon on the profile page.
+     */
+    public function updateAvatar(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $user->update([
+            'avatar' => $request->file('avatar')->store('avatars', 'public'),
+        ]);
+
+        return redirect()
+            ->route('profile.edit')
+            ->with('success', 'Ảnh đại diện đã được cập nhật.');
     }
 
     /**

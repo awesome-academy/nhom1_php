@@ -1,4 +1,4 @@
-@extends('layouts.user-guest')
+@extends(auth()->check() ? 'layouts.user-app' : 'layouts.user-guest')
 
 @section('content')
     {{-- Nội dung trang chủ sẽ được bổ sung sau. --}}
