@@ -1,15 +1,16 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\User\OrderController;
 
 Route::get('/', function () {
     return view('user/welcome');
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return view('user.dashboard');
     
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -17,7 +18,10 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 });
 
 Route::prefix('auth')->group(function () {
