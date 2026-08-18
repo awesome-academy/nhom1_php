@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Events\OrderCreated;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -16,7 +17,7 @@ class OrderService
 {
     public function checkout(int $userId): Order
     {
-        return DB::transaction(function () use ($userId): Order {
+        $order = DB::transaction(function () use ($userId): Order {
             $cart = CartService::getOrCreateForUser($userId);
             $cart->load(['items.product', 'items.productVariant']);
 
@@ -40,6 +41,10 @@ class OrderService
 
             return $order->load('items');
         });
+
+        OrderCreated::dispatch($order);
+
+        return $order;
     }
 
     public function createOrderItems(Order $order, Collection $cartItems): void
