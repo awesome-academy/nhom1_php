@@ -2,7 +2,6 @@
     $navLinks = [
         ['label' => __('Trang chủ'), 'url' => url('/'), 'active' => request()->is('/')],
         ['label' => __('Menu'), 'url' => '#', 'active' => request()->is('menu*')],
-        ['label' => __('Blog'), 'url' => '#', 'active' => request()->is('blog*')],
         ['label' => __('Shop'), 'url' => '#', 'active' => request()->is('shop*')],
         ['label' => __('Về chúng tôi'), 'url' => '#', 'active' => request()->is('about*')],
         ['label' => __('Contact'), 'url' => '#', 'active' => request()->is('contact*')],
