@@ -3,17 +3,19 @@
 use App\Http\Controllers\Api\Admin\SuggestionController as AdminSuggestionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
-use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\SuggestionController;
+use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\Admin\AdminCategoryController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
 Route::post('/login', [AuthController::class, 'login']);
 
+// Authenticated Routes (User & Admin)
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -39,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     // 98916
     Route::post('/checkout', [OrderController::class, 'checkout']);
+
+    // Admin (Bảo vệ bằng middleware check role admin)
+    Route::middleware('role')->prefix('admin')->name('api.admin.')->group(function () {
+        Route::apiResource('categories', AdminCategoryController::class);
+    });
 });
 
 // Categories (Public)
