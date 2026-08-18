@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthenticatedSessionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminProductController;
 
 
 use App\Http\Middleware\AdminMiddleware;
@@ -43,7 +44,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('users.destroy');
 
         //Category management
+        Route::get('categories/manage', [AdminCategoryController::class, 'manage'])
+            ->name('categories.manage');
         Route::resource('categories', AdminCategoryController::class)->except(['create', 'edit']);
+
+        //Product management
+        Route::resource('products', AdminProductController::class); 
+        Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'deleteImage'])
+            ->name('products.images.destroy'); 
 
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
