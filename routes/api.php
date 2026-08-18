@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
+use App\Http\Controllers\Api\SuggestionController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +19,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('products/{product}/ratings', [RatingController::class, 'store']);
     Route::put('ratings/{rating}', [RatingController::class, 'update']);
     Route::delete('ratings/{rating}', [RatingController::class, 'destroy']);
+
+    Route::get('/suggestions/me', [SuggestionController::class, 'index']);
+    Route::post('/suggestions', [SuggestionController::class, 'store']);
 
     Route::get('/cart', [CartController::class, 'show']);
     Route::post('/cart/items', [CartController::class, 'storeItem']);
