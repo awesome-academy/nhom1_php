@@ -78,7 +78,7 @@
                 <!-- Tiêu đề lớn (Headline) -->
                 <h2 class="font-serif text-3xl font-bold tracking-tight text-[#2B1E19] sm:text-4xl lg:text-[42px] lg:leading-[1.2]">
                     {{ __('Trọn Vẹn Đam Mê') }} <br class="hidden sm:inline">
-                    <span class="text-[#B38352]">{{ __('Cà Phê & Bánh Nướng') }}</span> {{ __('Thủ Công') }}
+                    <span class="text-[#B38352]">{{ __('Cà Phê & Bánh Nướng') }}<br/></span> {{ __('Thủ Công') }}
                 </h2>
 
                 <!-- Đoạn mô tả chuẩn nhận diện thương hiệu -->
