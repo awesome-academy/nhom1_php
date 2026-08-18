@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\SuggestionController;
@@ -30,6 +31,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // 98915
     Route::delete('/cart/items/{id}', [CartController::class, 'destroyItem']);
     Route::delete('/cart', [CartController::class, 'clear']);
+
+    // 98916
+    Route::post('/checkout', [OrderController::class, 'checkout']);
 });
 
 // Categories (Public)
