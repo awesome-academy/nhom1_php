@@ -56,3 +56,4 @@ Route::get('/categories/{id}/products', [CategoryController::class, 'products'])
 // Products (Public)
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
+Route::get('/products/{id}/ratings', [ProductController::class, 'ratings']);
