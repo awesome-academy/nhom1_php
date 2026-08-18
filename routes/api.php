@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\SuggestionController as AdminSuggestionController;
+use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\SuggestionController as AdminSuggestionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
@@ -8,8 +9,6 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\SuggestionController;
-use App\Http\Controllers\Auth\SocialAuthController;
-use App\Http\Controllers\Admin\AdminCategoryController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
