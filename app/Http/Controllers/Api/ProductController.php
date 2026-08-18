@@ -8,17 +8,50 @@ use App\Http\Resources\ProductListResource;
 use App\Http\Resources\RatingResource;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ProductController extends Controller
 {
-    public function index(): AnonymousResourceCollection
-    {
-        $products = Product::where('is_active', true)
-            ->with(['category', 'primaryImage'])
-            ->get();
 
-        return ProductListResource::collection($products);
+    public function index(Request $request): AnonymousResourceCollection
+    {
+        $query = Product::where('is_active', true)
+            ->with(['category', 'primaryImage']);
+
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', (float) $request->min_price);
+        }
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', (float) $request->max_price);
+        }
+
+        $sort = $request->query('sort', 'name_asc');
+
+        match ($sort) {
+            'name_asc' => $query->orderBy('name', 'asc'),
+            'name_desc' => $query->orderBy('name', 'desc'),
+            'price_asc' => $query->orderBy('price', 'asc'),
+            'price_desc' => $query->orderBy('price', 'desc'),
+            'rating_desc' => $query->orderByRaw('(
+                                SELECT COALESCE(AVG(r.rating), 0)
+                                FROM ratings r
+                                WHERE r.product_id = products.id
+                             ) DESC'),
+            default => $query->orderBy('name', 'asc'),
+        };
+        $perPage = min((int) $request->query('per_page', 15), 100);
+
+        return ProductListResource::collection($query->paginate($perPage));
     }
 
     public function show(int $id): ProductDetailResource|JsonResponse
@@ -29,7 +62,7 @@ class ProductController extends Controller
             ->with(['category', 'images', 'variants'])
             ->find($id);
 
-        if (! $product) {
+        if (!$product) {
             return response()->json([
                 'message' => 'Product not found.',
             ], 404);
@@ -43,7 +76,7 @@ class ProductController extends Controller
         $product = Product::where('is_active', true)
             ->find($id);
 
-        if (! $product) {
+        if (!$product) {
             return response()->json([
                 'message' => 'Product not found.',
             ], 404);

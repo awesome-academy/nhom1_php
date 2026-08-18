@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
-use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\RatingController;
+use App\Http\Controllers\Api\SuggestionController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -30,13 +32,20 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::delete('/cart/items/{id}', [CartController::class, 'destroyItem']);
     Route::delete('/cart', [CartController::class, 'clear']);
 
-    // 98916
+    // 98916 - Checkout
     Route::post('/checkout', [OrderController::class, 'checkout']);
 
-    // Admin (Bảo vệ bằng middleware check role admin)
-    Route::middleware('role')->prefix('admin')->name('api.admin.')->group(function () {
-        Route::apiResource('categories', AdminCategoryController::class);
-    });
+    // 98917 - Order history & detail
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+
+    // Admin
+    Route::middleware('role')
+        ->prefix('admin')
+        ->name('api.admin.')
+        ->group(function () {
+            Route::apiResource('categories', AdminCategoryController::class);
+        });
 });
 
 // Categories (Public)
