@@ -44,6 +44,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('users.destroy');
 
         //Category management
+        Route::get('categories/manage', [AdminCategoryController::class, 'manage'])
+            ->name('categories.manage');
         Route::resource('categories', AdminCategoryController::class)->except(['create', 'edit']);
 
         //Product management
