@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\OrderService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -47,6 +48,23 @@ class OrderController extends Controller
             ->find($id);
 
         if (! $order) {
+            return response()->json([
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        return new OrderResource($order);
+    }
+
+    // 98918 - Cancel pending/confirmed order
+    public function cancel(Request $request, int $id, OrderService $orderService): OrderResource|JsonResponse
+    {
+        try {
+            $order = $orderService->cancelOrder(
+                userId: $request->user()->id,
+                orderId: $id,
+            );
+        } catch (ModelNotFoundException) {
             return response()->json([
                 'message' => 'Order not found.',
             ], 404);

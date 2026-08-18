@@ -3,11 +3,11 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
-use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -39,6 +39,36 @@ class OrderService
             $this->deductStock($cart->items);
 
             return $order->load('items');
+        });
+    }
+
+    // 98918 - Cancel pending/confirmed order
+    public function cancelOrder(int $userId, int $orderId): Order
+    {
+        return DB::transaction(function () use ($userId, $orderId): Order {
+            $order = Order::query()
+                ->where('user_id', $userId)
+                ->with('items')
+                ->lockForUpdate()
+                ->find($orderId);
+
+            if (! $order) {
+                throw (new ModelNotFoundException())->setModel(Order::class, [$orderId]);
+            }
+
+            if (! $order->canBeCancelled()) {
+                throw ValidationException::withMessages([
+                    'status' => ['Order cannot be cancelled.'],
+                ]);
+            }
+
+            $order->update([
+                'status' => OrderStatus::CANCELLED,
+            ]);
+
+            $this->restoreStock($order->items);
+
+            return $order->fresh('items');
         });
     }
 
@@ -112,6 +142,19 @@ class OrderService
         }
     }
 
+    private function restoreStock(Collection $orderItems): void
+    {
+        foreach ($this->quantitiesByProduct($orderItems) as $productId => $totalQuantity) {
+            $product = Product::query()->lockForUpdate()->find($productId);
+
+            if (! $product instanceof Product) {
+                continue;
+            }
+
+            $product->increment('stock_quantity', $totalQuantity);
+        }
+    }
+
     /**
      * @return Collection<int, int>
      */
@@ -120,7 +163,7 @@ class OrderService
         return $cartItems
             ->groupBy('product_id')
             ->map(fn (Collection $items) => $items->sum(
-                fn (CartItem $item) => $item->quantity
+                fn ($item) => (int) $item->quantity
             ));
     }
 
