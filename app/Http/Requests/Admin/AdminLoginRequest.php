@@ -45,8 +45,10 @@ class AdminLoginRequest extends FormRequest
             ]);
         }
 
-        if (Auth::guard('admin')->user()->role !== 'admin') {
-            Auth::logout();
+        $admin = Auth::guard('admin')->user();
+
+        if ($admin->role !== 'admin') {
+            Auth::guard('admin')->logout();
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

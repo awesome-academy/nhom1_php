@@ -7,12 +7,13 @@
 
     <title>{{ __('Quản trị') }} - {{ config('app.name', 'BrewBite') }}</title>
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-[#f7f3ef] text-[#1b1b18]" x-data="{ sidebarOpen: false }">
+<body class="font-sans antialiased bg-[#FAF5F1] text-[#2B1E19]" x-data="{ sidebarOpen: false }">
     <div class="flex min-h-screen">
         @include('layouts.partials.admin-sidebar')
 
@@ -21,7 +22,7 @@
 
             <main class="flex-1 p-4 sm:p-6 lg:p-8">
                 @if (session('success'))
-                    <div class="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
                         {{ session('success') }}
                     </div>
                 @endif
@@ -30,5 +31,7 @@
             </main>
         </div>
     </div>
+
+    @stack('scripts')
 </body>
 </html>

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\View\View;
+
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCategoryRequest;
 use App\Http\Requests\Admin\UpdateCategoryRequest;
@@ -16,6 +18,11 @@ use Illuminate\Support\Facades\DB;
 
 class AdminCategoryController extends Controller
 {
+    
+    public function manage(): View
+    {
+        return view('admin.categories.manage');
+    }
     /**
      * GET /admin/categories
      * Danh sách đầy đủ category cho admin kèm phân trang, tìm kiếm hoặc lọc cha/con.

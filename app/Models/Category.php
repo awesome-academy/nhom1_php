@@ -34,7 +34,21 @@ class Category extends Model
     }
 
     /**
-     * Lấy tất cả ID của danh mục hiện tại và toàn bộ cây con (BFS).
+     * Accessor: Đếm tổng sản phẩm của chính danh mục này và toàn bộ danh mục con.
+     */
+    public function getTotalProductsCountAttribute(): int
+    {
+        if ($this->relationLoaded('children') && $this->children->isEmpty()) {
+            return (int) ($this->products_count ?? 0);
+        }
+
+        $allIds = $this->getAllDescendantIds();
+        return \App\Models\Product::whereIn('category_id', $allIds)->count();
+    }
+
+
+    /**
+     * Lấy tất cả ID của danh mục hiện tại và toàn bộ cây con.
      * Dùng để query sản phẩm của cả cây danh mục.
      */
     public function getAllDescendantIds(): array

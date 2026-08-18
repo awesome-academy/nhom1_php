@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\SuggestionController as AdminSuggestionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
@@ -23,6 +24,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('/suggestions/me', [SuggestionController::class, 'index']);
     Route::post('/suggestions', [SuggestionController::class, 'store']);
+
+    Route::prefix('admin')->middleware('admin')->group(function (): void {
+        Route::get('/suggestions', [AdminSuggestionController::class, 'index']);
+        Route::put('/suggestions/{suggestion}', [AdminSuggestionController::class, 'update']);
+    });
 
     Route::get('/cart', [CartController::class, 'show']);
     Route::post('/cart/items', [CartController::class, 'storeItem']);
@@ -59,3 +65,4 @@ Route::get('/categories/{id}/products', [CategoryController::class, 'products'])
 // Products (Public)
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
+Route::get('/products/{id}/ratings', [ProductController::class, 'ratings']);
