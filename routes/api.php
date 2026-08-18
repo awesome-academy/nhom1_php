@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AdminCategoryController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -20,4 +21,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // 98915
     Route::delete('/cart/items/{id}', [CartController::class, 'destroyItem']);
     Route::delete('/cart', [CartController::class, 'clear']);
+    
+    //Admin
+    Route::middleware('role')->prefix('admin')->name('api.admin.')->group(function () {
+        Route::apiResource('categories', AdminCategoryController::class);
+    });
+    
 });
