@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
-use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -23,6 +24,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // 98915
     Route::delete('/cart/items/{id}', [CartController::class, 'destroyItem']);
     Route::delete('/cart', [CartController::class, 'clear']);
+});
+
+// Product gallery management (Admin only)
+Route::prefix('admin')->middleware(['auth:sanctum', AdminMiddleware::class])->group(function (): void {
+    Route::post('products/{product}/images', [ProductImageController::class, 'store']);
+    Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy']);
 });
 
 // Categories (Public)
