@@ -1,40 +1,55 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CartController;
-use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\RatingController;
-use App\Http\Controllers\Auth\SocialAuthController;
-use Illuminate\Support\Facades\Route;
+namespace App\Http\Controllers\Api;
 
-// Auth
-Route::post('/login', [AuthController::class, 'login']);
+use App\Http\Controllers\Controller;
+use App\Http\Resources\OrderResource;
+use App\Models\Order;
+use App\Services\OrderService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-Route::middleware('auth:sanctum')->group(function (): void {
-    Route::post('/logout', [AuthController::class, 'logout']);
+class OrderController extends Controller
+{
+    // 98916 - Checkout
+    public function checkout(Request $request, OrderService $orderService): JsonResponse
+    {
+        $order = $orderService->checkout($request->user()->id);
 
-    Route::post('products/{product}/ratings', [RatingController::class, 'store']);
+        return response()->json([
+            'data' => $order,
+        ], 201);
+    }
 
-    Route::get('/cart', [CartController::class, 'show']);
-    Route::post('/cart/items', [CartController::class, 'storeItem']);
-    Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
+    // 98917 - Order history
+    public function index(Request $request): AnonymousResourceCollection
+    {
+        $perPage = min((int) $request->query('per_page', 15), 100);
 
-    // 98915
-    Route::delete('/cart/items/{id}', [CartController::class, 'destroyItem']);
-    Route::delete('/cart', [CartController::class, 'clear']);
+        $orders = Order::query()
+            ->where('user_id', $request->user()->id)
+            ->withCount('items')
+            ->latest()
+            ->paginate($perPage);
 
-    // 98917
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::get('/orders/{id}', [OrderController::class, 'show']);
-});
+        return OrderResource::collection($orders);
+    }
 
-// Categories (Public)
-Route::get('/categories', [CategoryController::class, 'index']);
-Route::get('/categories/{id}', [CategoryController::class, 'show']);
-Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
+    // 98917 - Order detail
+    public function show(Request $request, int $id): OrderResource|JsonResponse
+    {
+        $order = Order::query()
+            ->where('user_id', $request->user()->id)
+            ->with('items')
+            ->find($id);
 
-// Products (Public)
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{id}', [ProductController::class, 'show']);
+        if (! $order) {
+            return response()->json([
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        return new OrderResource($order);
+    }
+}
