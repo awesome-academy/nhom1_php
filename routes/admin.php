@@ -3,10 +3,12 @@
 use App\Http\Controllers\Admin\AdminAuthenticatedSessionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminCategoryController;
 
 
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 | Admin Routes
@@ -39,6 +41,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('users.update');
         Route::delete('users/{user}', [AdminUserController::class, 'destroy'])
             ->name('users.destroy');
+
+        //Category management
+        Route::resource('categories', AdminCategoryController::class)->except(['create', 'edit']);
 
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
