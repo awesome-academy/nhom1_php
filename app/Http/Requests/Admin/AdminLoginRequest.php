@@ -37,7 +37,7 @@ class AdminLoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        if (! Auth::guard('admin')->attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -45,7 +45,7 @@ class AdminLoginRequest extends FormRequest
             ]);
         }
 
-        if (Auth::user()->role !== 'admin') {
+        if (Auth::guard('admin')->user()->role !== 'admin') {
             Auth::logout();
             RateLimiter::hit($this->throttleKey());
 
