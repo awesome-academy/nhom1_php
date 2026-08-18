@@ -8,7 +8,7 @@ use Illuminate\View\View;
 class GuestLayout extends Component
 {
     /**
-     * Admin Login Layout
+     * Get the view / contents that represents the component.
      */
     public function render(): View
     {
