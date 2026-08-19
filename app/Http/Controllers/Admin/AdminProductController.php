@@ -86,6 +86,7 @@ class AdminProductController extends Controller
             ]);
 
             $this->storeImages($product, $request);
+            $this->syncVariants($product, $request);
         });
 
         return redirect()
@@ -96,7 +97,7 @@ class AdminProductController extends Controller
     public function edit(Product $product): View
     {
         $categories = Category::with('children')->orderBy('name')->get();
-        $product->load('images');
+        $product->load(['images', 'variants']);
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
@@ -122,11 +123,29 @@ class AdminProductController extends Controller
             ]);
 
             $this->storeImages($product, $request);
+            $this->syncVariants($product, $request);
         });
 
         return redirect()
             ->route('admin.products.edit', $product)
             ->with('success', 'Đã cập nhật sản phẩm thành công.');
+    }
+
+    private function syncVariants(Product $product, Request $request): void
+    {
+        $product->variants()->delete();
+
+        if ($request->input('type') === 'drink' && $request->has('variants')) {
+            foreach ($request->input('variants') as $item) {
+                if (!empty($item['name'])) {
+                    $product->variants()->create([
+                        'variant_group' => $item['variant_group'],
+                        'name'          => trim($item['name']),
+                        'extra_price'   => $item['extra_price'] ?? 0,
+                    ]);
+                }
+            }
+        }
     }
 
     public function destroy(Product $product)

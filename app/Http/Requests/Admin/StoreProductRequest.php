@@ -29,6 +29,11 @@ class StoreProductRequest extends FormRequest
             'images' => ['nullable', 'array'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'primary_image_index' => ['nullable', 'integer', 'min:0'],
+
+            'variants'                  => ['nullable', 'array'],
+            'variants.*.variant_group'  => ['required_with:variants', 'string', 'in:size,sugar,ice,topping'],
+            'variants.*.name'           => ['required_with:variants', 'string', 'max:100'],
+            'variants.*.extra_price'    => ['required_with:variants', 'numeric', 'min:0'],
         ];
     }
 }
