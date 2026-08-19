@@ -7,10 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProductListResource extends JsonResource
 {
-    /**
-     * Dùng cho endpoint GET /api/products (danh sách).
-     * Chỉ trả các trường cần thiết cho listing + ảnh đại diện (is_primary = true).
-     */
     public function toArray(Request $request): array
     {
         return [
@@ -20,6 +16,8 @@ class ProductListResource extends JsonResource
             'price'          => $this->price,
             'type'           => $this->type,
             'stock_quantity' => $this->stock_quantity,
+            'rating_avg'     => round((float) ($this->ratings_avg_rating ?? 0), 1),
+            'ratings_count'  => $this->ratings_count ?? 0,
             'category'       => $this->when(
                 $this->relationLoaded('category'),
                 fn () => [
