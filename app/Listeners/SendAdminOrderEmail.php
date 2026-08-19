@@ -3,7 +3,10 @@
 namespace App\Listeners;
 
 use App\Events\OrderCreated;
+use App\Mail\AdminOrderNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SendAdminOrderEmail implements ShouldQueue
 {
@@ -25,6 +28,21 @@ class SendAdminOrderEmail implements ShouldQueue
      */
     public function handle(OrderCreated $event): void
     {
-        // TODO: Implement Email notification (Task #98926)
+        $adminAddress = trim((string) config('services.admin_notification.email'));
+
+        if ($adminAddress === '') {
+            Log::warning(
+                'Admin order email notification skipped: recipient is not configured.',
+                ['order_id' => $event->order->id],
+            );
+
+            return;
+        }
+
+        $order = $event->order->loadMissing(['user', 'items']);
+
+        Mail::to($adminAddress)->send(
+            new AdminOrderNotification($order),
+        );
     }
 }
