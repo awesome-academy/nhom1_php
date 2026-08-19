@@ -41,26 +41,4 @@ class Order extends Model
             OrderStatus::CONFIRMED,
         ], true);
     }
-
-    /**
-     * 98919 - Trả về danh sách trạng thái admin được phép chuyển đến từ trạng thái hiện tại.
-     *
-     * Luồng hợp lệ:
-     *   PENDING   → CONFIRMED | CANCELLED
-     *   CONFIRMED → PREPARING | CANCELLED
-     *   PREPARING → COMPLETED
-     *   COMPLETED → (không cho phép)
-     *   CANCELLED → (không cho phép)
-     *
-     * @return OrderStatus[]
-     */
-    public function allowedAdminTransitions(): array
-    {
-        return match ($this->status) {
-            OrderStatus::PENDING   => [OrderStatus::CONFIRMED, OrderStatus::CANCELLED],
-            OrderStatus::CONFIRMED => [OrderStatus::PREPARING, OrderStatus::CANCELLED],
-            OrderStatus::PREPARING => [OrderStatus::COMPLETED],
-            default                => [],
-        };
-    }
 }

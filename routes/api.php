@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminCategoryController;
-use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\SuggestionController as AdminSuggestionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
@@ -29,11 +28,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::prefix('admin')->middleware('admin')->group(function (): void {
         Route::get('/suggestions', [AdminSuggestionController::class, 'index']);
         Route::put('/suggestions/{suggestion}', [AdminSuggestionController::class, 'update']);
-
-        // 98919 - Admin order management
-        Route::get('/orders', [AdminOrderController::class, 'index']);
-        Route::get('/orders/{id}', [AdminOrderController::class, 'show']);
-        Route::patch('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
     });
 
     Route::get('/cart', [CartController::class, 'show']);

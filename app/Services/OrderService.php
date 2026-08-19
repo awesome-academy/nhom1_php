@@ -47,41 +47,6 @@ class OrderService
         return $order;
     }
 
-    // 98919 - Admin: transition order to a new status
-    public function adminTransitionStatus(int $orderId, OrderStatus $newStatus): Order
-    {
-        return DB::transaction(function () use ($orderId, $newStatus): Order {
-            $order = Order::query()
-                ->with('items')
-                ->lockForUpdate()
-                ->find($orderId);
-
-            if (! $order) {
-                throw (new ModelNotFoundException())
-                    ->setModel(Order::class, [$orderId]);
-            }
-
-            $allowed = $order->allowedAdminTransitions();
-
-            if (! in_array($newStatus, $allowed, true)) {
-                throw ValidationException::withMessages([
-                    'status' => [
-                        "Cannot transition order from '{$order->status->value}' to '{$newStatus->value}'.",
-                    ],
-                ]);
-            }
-
-            $order->update(['status' => $newStatus]);
-
-            // Hoàn kho khi admin chuyển sang CANCELLED
-            if ($newStatus === OrderStatus::CANCELLED) {
-                $this->restoreStock($order->items);
-            }
-
-            return $order->fresh('items');
-        });
-    }
-
     // 98918 - Cancel pending/confirmed order
     public function cancelOrder(int $userId, int $orderId): Order
     {
