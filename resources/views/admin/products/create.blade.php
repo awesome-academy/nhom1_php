@@ -118,5 +118,41 @@
             }
         };
     }
+
+    function productFormManager(initialVariants = [], defaultType = 'drink') {
+        return {
+            productType: defaultType,
+            variants: initialVariants.length > 0 ? initialVariants : [],
+
+            addVariant(group = 'topping', name = '', price = 0) {
+                this.variants.push({
+                    variant_group: group,
+                    name: name,
+                    extra_price: price
+                });
+            },
+
+            removeVariant(index) {
+                this.variants.splice(index, 1);
+            },
+
+            addPresetVariants() {
+                const presets = [
+                    { variant_group: 'size', name: 'Size M (Tiêu chuẩn)', extra_price: 0 },
+                    { variant_group: 'size', name: 'Size L (+500ml)', extra_price: 10000 },
+                    { variant_group: 'sugar', name: '100% Đường', extra_price: 0 },
+                    { variant_group: 'sugar', name: '50% Đường', extra_price: 0 },
+                    { variant_group: 'sugar', name: 'Không đường (0%)', extra_price: 0 },
+                    { variant_group: 'ice', name: '100% Đá', extra_price: 0 },
+                    { variant_group: 'ice', name: 'Ít đá', extra_price: 0 },
+                ];
+
+                presets.forEach(p => {
+                    const exists = this.variants.some(v => v.variant_group === p.variant_group && v.name === p.name);
+                    if (!exists) this.variants.push(p);
+                });
+            }
+        };
+    }
 </script>
 @endpush
