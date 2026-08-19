@@ -27,8 +27,14 @@ class AdminProductController extends Controller
         }
 
         if ($request->filled('category_id')) {
-            $query->where('category_id', $request->integer('category_id'));
+        $categoryId = $request->integer('category_id');
+        $selectedCategory = Category::with('children')->find($categoryId);
+
+        if ($selectedCategory) {
+            $categoryIds = $selectedCategory->children->pluck('id')->push($selectedCategory->id);
+            $query->whereIn('category_id', $categoryIds);
         }
+    }
 
         if ($request->filled('type')) {
             $query->where('type', $request->input('type'));
@@ -49,8 +55,8 @@ class AdminProductController extends Controller
         };
 
         $products = $query->paginate(12)->withQueryString();
-        $categories = Category::orderBy('name')->get();
-
+        $categories = Category::with('children')->whereNull('parent_id')->orderBy('name')->get();
+        
         return view('admin.products.index', compact('products', 'categories'));
     }
 
@@ -89,7 +95,7 @@ class AdminProductController extends Controller
 
     public function edit(Product $product): View
     {
-        $categories = Category::all();
+        $categories = Category::with('children')->orderBy('name')->get();
         $product->load('images');
         return view('admin.products.edit', compact('product', 'categories'));
     }
@@ -120,7 +126,7 @@ class AdminProductController extends Controller
 
         return redirect()
             ->route('admin.products.edit', $product)
-            ->with('success', 'Đã cập nhật sản phẩm.');
+            ->with('success', 'Đã cập nhật sản phẩm thành công.');
     }
 
     public function destroy(Product $product)
