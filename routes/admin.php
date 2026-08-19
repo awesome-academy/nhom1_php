@@ -49,9 +49,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('categories', AdminCategoryController::class)->except(['create', 'edit']);
 
         //Product management
-        Route::resource('products', AdminProductController::class); 
-        Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'deleteImage'])
-            ->name('products.images.destroy'); 
+        Route::resource('products', AdminProductController::class)->except(['show']);
+        Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])
+            ->name('products.images.destroy');
+        Route::patch('products/{product}/images/{image}/primary', [AdminProductController::class, 'setPrimaryImage'])
+            ->name('products.images.primary');
 
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');

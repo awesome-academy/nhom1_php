@@ -3,137 +3,258 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreProductRequest;
+use App\Http\Requests\Admin\UpdateProductRequest;
+
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
+
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class AdminProductController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request) : View
     {
-        $products = Product::with(['category', 'primaryImage'])
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%');
-            })
-            ->when($request->filled('type'), fn($q) => $q->where('type', $request->type))
-            ->when($request->filled('category_id'), fn($q) => $q->where('category_id', $request->category_id))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $query = Product::query()->with(['category', 'primaryImage']);
 
-        $categories = Category::whereNotNull('parent_id')->orWhereDoesntHave('children')->get();
+        if ($search = $request->input('search')) {
+            $query->where('name', 'like', "%{$search}%");
+        }
 
+        if ($request->filled('category_id')) {
+        $categoryId = $request->integer('category_id');
+        $selectedCategory = Category::with('children')->find($categoryId);
+
+        if ($selectedCategory) {
+            $categoryIds = $selectedCategory->children->pluck('id')->push($selectedCategory->id);
+            $query->whereIn('category_id', $categoryIds);
+        }
+    }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
+        if ($request->input('status') === 'active') {
+            $query->where('is_active', true);
+        } elseif ($request->input('status') === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        match ($request->input('sort')) {
+            'name_asc' => $query->orderBy('name', 'asc'),
+            'price_asc' => $query->orderBy('price', 'asc'),
+            'price_desc' => $query->orderBy('price', 'desc'),
+            'stock_asc' => $query->orderBy('stock_quantity', 'asc'),
+            default => $query->latest('id'),
+        };
+
+        $products = $query->paginate(12)->withQueryString();
+        $categories = Category::with('children')->whereNull('parent_id')->orderBy('name')->get();
+        
         return view('admin.products.index', compact('products', 'categories'));
     }
 
     public function create()
     {
-        $categories = Category::all();
+        $categories = Category::with('parent')->orderBy('name')->get();
         return view('admin.products.create', compact('categories'));
     }
 
-    public function store(StoreProductRequest $request)
+    public function store(StoreProductRequest $request): RedirectResponse
     {
-        DB::transaction(function () use ($request) {
-            $data = $request->validated();
-            $data['slug'] = Str::slug($data['name']) . '-' . Str::random(5);
-            $data['is_active'] = $request->boolean('is_active', true);
+        $validated = $request->validated();
 
-            $product = Product::create($data);
+        DB::transaction(function () use ($validated, $request): void {
+            $product = Product::create([
+                'category_id' => $validated['category_id'],
+                'name' => $validated['name'],
+                'slug' => $this->uniqueSlug($validated['name']),
+                'description' => $this->composeDescription(
+                    $validated['summary'] ?? null,
+                    $validated['full_description'] ?? null
+                ),
+                'type' => $validated['type'],
+                'price' => $validated['price'],
+                'stock_quantity' => $validated['stock_quantity'],
+                'is_active' => $request->boolean('is_active'),
+            ]);
 
-            // 1. Lưu ảnh đại diện chính (Primary Image)
-            if ($request->hasFile('primary_image')) {
-                $path = $request->file('primary_image')->store('products', 'public');
-                $product->images()->create([
-                    'image_path' => $path,
-                    'is_primary' => true,
-                ]);
-            }
-
-            // 2. Lưu bộ sưu tập ảnh (Gallery Images)
-            if ($request->hasFile('gallery_images')) {
-                foreach ($request->file('gallery_images') as $file) {
-                    $path = $file->store('products', 'public');
-                    $product->images()->create([
-                        'image_path' => $path,
-                        'is_primary' => false,
-                    ]);
-                }
-            }
+            $this->storeImages($product, $request);
+            $this->syncVariants($product, $request);
         });
 
-        return redirect()->route('admin.products.index')->with('success', 'Thêm sản phẩm thành công!');
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Đã tạo sản phẩm mới.');
     }
 
-    public function edit(Product $product)
+    public function edit(Product $product): View
     {
-        $categories = Category::all();
-        $product->load('images');
+        $categories = Category::with('children')->orderBy('name')->get();
+        $product->load(['images', 'variants']);
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
     public function update(StoreProductRequest $request, Product $product)
     {
-        DB::transaction(function () use ($request, $product) {
-            $data = $request->validated();
-            $data['slug'] = Str::slug($data['name']) . '-' . $product->id;
-            $data['is_active'] = $request->boolean('is_active');
+        $validated = $request->validated();
 
-            $product->update($data);
+        DB::transaction(function () use ($validated, $request, $product): void {
+            $product->update([
+                'category_id' => $validated['category_id'],
+                'name' => $validated['name'],
+                'slug' => $validated['name'] !== $product->name
+                    ? $this->uniqueSlug($validated['name'], $product->id)
+                    : $product->slug,
+                'description' => $this->composeDescription(
+                    $validated['summary'] ?? null,
+                    $validated['full_description'] ?? null
+                ),
+                'type' => $validated['type'],
+                'price' => $validated['price'],
+                'stock_quantity' => $validated['stock_quantity'],
+                'is_active' => $request->boolean('is_active'),
+            ]);
 
-            if ($request->hasFile('primary_image')) {
-                $oldPrimary = $product->images()->where('is_primary', true)->first();
-                if ($oldPrimary) {
-                    Storage::disk('public')->delete($oldPrimary->image_path);
-                    $oldPrimary->delete();
-                }
-                $path = $request->file('primary_image')->store('products', 'public');
-                $product->images()->create(['image_path' => $path, 'is_primary' => true]);
-            }
-
-            if ($request->hasFile('gallery_images')) {
-                foreach ($request->file('gallery_images') as $file) {
-                    $path = $file->store('products', 'public');
-                    $product->images()->create(['image_path' => $path, 'is_primary' => false]);
-                }
-            }
+            $this->storeImages($product, $request);
+            $this->syncVariants($product, $request);
         });
 
-        return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công!');
+        return redirect()
+            ->route('admin.products.edit', $product)
+            ->with('success', 'Đã cập nhật sản phẩm thành công.');
+    }
+
+    private function syncVariants(Product $product, Request $request): void
+    {
+        $product->variants()->delete();
+
+        if ($request->input('type') === 'drink' && $request->has('variants')) {
+            foreach ($request->input('variants') as $item) {
+                if (!empty($item['name'])) {
+                    $product->variants()->create([
+                        'variant_group' => $item['variant_group'],
+                        'name'          => trim($item['name']),
+                        'extra_price'   => $item['extra_price'] ?? 0,
+                    ]);
+                }
+            }
+        }
     }
 
     public function destroy(Product $product)
     {
-        DB::transaction(function () use ($product) {
-            // 1. Xóa toàn bộ file ảnh vật lý trên storage disk
-            foreach ($product->images as $image) {
-                Storage::disk('public')->delete($image->image_path);
-            }
-            
-            // 2. Xóa các quan hệ phụ thuộc
-            $product->images()->delete();
-            if (method_exists($product, 'variants')) {
-                $product->variants()->delete();
-            }
+        $product->delete();
 
-            // 3. Xóa sản phẩm
-            $product->delete();
-        });
-
-        return redirect()->route('admin.products.index')->with('success', 'Đã xóa sản phẩm thành công!');
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Đã xoá sản phẩm.');
     }
 
-    public function deleteImage(Product $product, ProductImage $image)
+    public function destroyImage(Product $product, ProductImage $image): RedirectResponse
     {
-        if ($image->product_id === $product->id) {
+        abort_unless($image->product_id === $product->id, 404);
+
+        $wasPrimary = $image->is_primary;
+
+        if ($image->image_path && Storage::disk('public')->exists($image->image_path)) {
             Storage::disk('public')->delete($image->image_path);
-            $image->delete();
-            return back()->with('success', 'Đã xóa ảnh thành công.');
         }
-        return back()->withErrors(['msg' => 'Ảnh không thuộc sản phẩm này.']);
+
+        $image->delete();
+
+        if ($wasPrimary) {
+            $product->images()->oldest('id')->first()?->update(['is_primary' => true]);
+        }
+
+        return back()->with('success', 'Đã xoá ảnh sản phẩm.');
+    }
+
+    /**
+     * Promote an existing image to be the primary/listing image.
+     */
+    public function setPrimaryImage(Product $product, ProductImage $image): RedirectResponse
+    {
+        abort_unless($image->product_id === $product->id, 404);
+
+        DB::transaction(function () use ($product, $image): void {
+            $product->images()->where('id', '!=', $image->id)->update(['is_primary' => false]);
+            $image->update(['is_primary' => true]);
+        });
+
+        return back()->with('success', 'Đã đặt làm ảnh đại diện.');
+    }
+
+    /**
+     * Store any newly uploaded images for the product.
+     * First image of a product with no existing images becomes primary automatically
+     * (or whichever index the admin marked via primary_image_index on create).
+     */
+    private function storeImages(Product $product, Request $request): void
+    {
+        if (! $request->hasFile('images')) {
+            return;
+        }
+
+        $hadImages = $product->images()->exists();
+        $primaryIndex = $request->filled('primary_image_index')
+            ? (int) $request->input('primary_image_index')
+            : null;
+
+        foreach ($request->file('images') as $index => $file) {
+            $path = $file->store('products', 'public');
+
+            $isPrimary = ! $hadImages && ($primaryIndex === $index || ($primaryIndex === null && $index === 0));
+
+            $product->images()->create([
+                'image_path' => $path,
+                'is_primary' => $isPrimary,
+            ]);
+
+            if ($isPrimary) {
+                $hadImages = true; // only one primary per batch
+            }
+        }
+
+        if (! $product->images()->where('is_primary', true)->exists()) {
+            $product->images()->oldest('id')->first()?->update(['is_primary' => true]);
+        }
+    }
+
+    private function uniqueSlug(string $name, ?int $ignoreId = null): string
+    {
+        $slug = Str::slug($name);
+        $original = $slug;
+        $i = 1;
+
+        while (
+            Product::withTrashed()
+                ->where('slug', $slug)
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = "{$original}-{$i}";
+            $i++;
+        }
+
+        return $slug;
+    }
+
+    private function composeDescription(?string $summary, ?string $full): string
+    {
+        $summary = trim((string) $summary);
+        $full = trim((string) $full);
+
+        if ($summary === '' && $full === '') {
+            return '';
+        }
+
+        return "【Product Summary】\n{$summary}\n\n【Mô tả chi tiết】\n{$full}";
     }
 }
