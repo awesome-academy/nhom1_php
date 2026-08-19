@@ -11,7 +11,9 @@ class ProductVariant extends Model
 
     protected $casts = [
         'variant_group' => VariantGroup::class,
+        'extra_price' => 'decimal:2',
     ];
+
     public function product()
     {
         return $this->belongsTo(Product::class);

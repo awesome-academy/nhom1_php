@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminProductVariantController;
 use App\Http\Controllers\Admin\SuggestionController as AdminSuggestionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
@@ -53,6 +54,15 @@ Route::middleware('auth:sanctum')->group(function (): void {
             Route::apiResource('categories', AdminCategoryController::class);
         });
 });
+
+// Product variants (Admin only)
+Route::middleware(['auth:sanctum', 'role:admin'])
+    ->prefix('admin')
+    ->group(function (): void {
+        Route::post('products/{id}/variants', [AdminProductVariantController::class, 'store']);
+        Route::put('products/{id}/variants/{variantId}', [AdminProductVariantController::class, 'update']);
+        Route::delete('products/{id}/variants/{variantId}', [AdminProductVariantController::class, 'destroy']);
+    });
 
 // Categories (Public)
 Route::get('/categories', [CategoryController::class, 'index']);
