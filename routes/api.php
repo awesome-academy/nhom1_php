@@ -45,6 +45,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
 
+    // 98918 - Cancel order
+    Route::patch('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+
     // Admin
     Route::middleware('role')
         ->prefix('admin')
