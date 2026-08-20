@@ -16,8 +16,10 @@ class CartController extends Controller
     {
         $cart = CartService::getOrCreateForUser($request->user()->id);
 
-        $cart->load(['items.product', 'items.productVariant']);
-
+        $cart->load([
+            'items.product.images',
+            'items.productVariant',
+        ]);
         return new CartResource($cart);
     }
 

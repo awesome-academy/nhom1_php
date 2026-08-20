@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class OrderItem extends Model
 {
@@ -46,5 +47,22 @@ class OrderItem extends Model
     public function productVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class);
+    }
+
+    public function getDisplayImageAttribute(): string
+    {
+        if ($this->variant && !empty($this->variant->image_url)) {
+            return Storage::url($this->variant->image_url);
+        }
+
+        if ($this->product && $this->product->primaryImage) {
+            return Storage::url($this->product->primaryImage->image_url);
+        }
+
+        if ($this->product && $this->product->images && $this->product->images->isNotEmpty()) {
+            return Storage::url($this->product->images->first()->image_url);
+        }
+
+        return 'https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=200&auto=format&fit=crop';
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\User\MenuController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\Api\CartController as ApiCartController;
+use App\Http\Controllers\Api\OrderController as ApiOrderController;
 
 
 Route::get('/', function () {
@@ -41,7 +42,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart/items/{id}', [ApiCartController::class, 'destroyItem'])->name('cart.items.destroy');
     Route::delete('/cart/clear', [ApiCartController::class, 'clear'])->name('cart.clear');
 
+    Route::post('/checkout', [ApiOrderController::class, 'checkout'])->name('checkout');
+
+
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders', [ApiOrderController::class, 'index'])->name('orders.index');
+    Route::patch('/orders/{id}/cancel', [ApiOrderController::class, 'cancel'])->name('orders.cancel');
 });
 
 Route::prefix('auth')->group(function () {

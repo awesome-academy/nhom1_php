@@ -4,20 +4,43 @@
         cartCount: 0,
         async fetchCartCount() {
             try {
-                const res = await fetch('{{ url('/api/cart') }}', { headers: { Accept: 'application/json' } });
+                const res = await fetch('{{ url('/cart/data') }}', {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
                 if (res.ok) {
                     const json = await res.json();
-                    this.cartCount = (json.data ?? json)?.item_count ?? 0;
+                    this.updateCountFromJson(json);
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error('Error fetching cart:', e);
+            }
+        },
+        updateCountFromJson(json) {
+            // Hỗ trợ mọi cấu trúc response thường gặp từ Controller
+            this.cartCount = json.item_count 
+                ?? json.data?.item_count 
+                ?? json.cart?.items_count 
+                ?? json.cart?.items?.reduce((sum, i) => sum + (i.quantity || 1), 0)
+                ?? json.items?.reduce((sum, i) => sum + (i.quantity || 1), 0) 
+                ?? 0;
         }
     }"
     x-init="fetchCartCount()"
-    class="sticky top-0 z-50 border-b border-[#EADBCE]/80 bg-[#FAF5F1]/95 text-[#2B1E19] backdrop-blur-md transition-all duration-200">    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    @cart-updated.window="
+        if ($event.detail?.cart || $event.detail?.data) {
+            updateCountFromJson($event.detail);
+        } else if (typeof $event.detail?.count === 'number') {
+            cartCount = $event.detail.count;
+        } else {
+            fetchCartCount();
+        }
+    "
+    class="sticky top-0 z-50 border-b border-[#EADBCE]/80 bg-[#FAF5F1]/95 text-[#2B1E19] backdrop-blur-md transition-all duration-200">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
     <div class="flex h-20 items-center justify-between">
             
-            <!-- 1. Logo Thương Hiệu (Style Brew & Bite Artisan Cafe) -->
             <a href="{{ url('/') }}" class="group flex items-center gap-2.5 transition">
                 <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#B38352] shadow-sm ring-1 ring-[#EADBCE] transition group-hover:scale-105 group-hover:border-[#B38352]/50">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
@@ -36,15 +59,12 @@
                 </div>
             </a>
 
-            <!-- 2. Menu Navigation Trên Desktop -->
             <nav class="hidden items-center gap-8 text-sm font-medium text-[#736357] lg:flex">
                 @include('layouts.partials.nav-links')
             </nav>
 
-            <!-- 3. Khu Vực Tương Tác Của User (Tìm kiếm, Giỏ hàng, User Dropdown) -->
             <div class="hidden items-center gap-3 lg:flex">
                 
-                <!-- Nút Tìm kiếm -->
                 <button 
                     type="button" 
                     class="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EADBCE] bg-white/80 text-[#736357] shadow-sm transition hover:border-[#B38352] hover:bg-[#FAF5F1] hover:text-[#B38352] focus:outline-none" 
@@ -55,51 +75,32 @@
                     </svg>
                 </button>
 
-                <!-- Nút Giỏ Hàng (Kèm Badge số lượng) -->
-                <div x-data="{ 
-                    count: 0,
-                    async init() {
-                        try {
-                            const res = await fetch('{{ url('/cart/data') }}', { credentials: 'same-origin' });
-                            if (res.ok) {
-                                const json = await res.json();
-                                this.count = json.cart?.items_count ?? json.cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
-                            }
-                        } catch (e) {}
-                    }
-                }" 
-                @cart-updated.window="
-                    count = $event.detail.cart?.items_count ?? $event.detail.cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? count + 1;
-                "
-                class="relative">
-                
-                <a 
-                    href="{{ route('cart.index') }}" 
-                    class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[#EADBCE] bg-white/80 text-[#736357] shadow-sm transition hover:border-[#B38352] hover:bg-[#FAF5F1] hover:text-[#B38352]" 
-                    title="{{ __('Giỏ hàng') }}"
-                >
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-
-                    <span 
-                        x-show="count > 0" 
-                        x-text="count" 
-                        x-cloak
-                        class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#B38352] text-[10px] font-bold text-white shadow-sm transition-transform duration-200 scale-100"
+                <div class="relative">
+                    <a 
+                        href="{{ route('cart.index') }}" 
+                        class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[#EADBCE] bg-white/80 text-[#736357] shadow-sm transition hover:border-[#B38352] hover:bg-[#FAF5F1] hover:text-[#B38352]" 
+                        title="{{ __('Giỏ hàng') }}"
                     >
-                    </span>
-                </a>
-            </div>
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
 
-                <!-- User Dropdown Menu -->
+                        <span 
+                            x-show="cartCount > 0" 
+                            x-text="cartCount" 
+                            x-cloak
+                            class="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#B38352] px-1 text-[10px] font-bold text-white shadow-sm transition-transform duration-200"
+                        >
+                        </span>
+                    </a>
+                </div>
+
                 <div class="relative" @click.outside="userMenu = false">
                     <button 
                         type="button" 
                         @click="userMenu = !userMenu" 
                         class="flex items-center gap-2 rounded-xl border border-[#EADBCE] bg-white/80 py-1.5 pl-2 pr-3 text-sm font-semibold text-[#2B1E19] shadow-sm transition hover:border-[#B38352] hover:bg-[#FAF5F1] focus:outline-none"
                     >
-                        <!-- Avatar User / Icon -->
                         <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-[#2B1E19] text-[#FAF5F1] text-xs font-bold shadow-sm">
                             {{ substr(auth()->user()?->name ?? 'U', 0, 1) }}
                         </div>
@@ -111,7 +112,6 @@
                         </svg>
                     </button>
 
-                    <!-- Dropdown Content -->
                     <div
                         x-show="userMenu"
                         x-cloak
@@ -123,13 +123,11 @@
                         x-transition:leave-end="opacity-0 translate-y-1 scale-95"
                         class="absolute right-0 z-50 mt-2 w-56 rounded-2xl border border-[#EADBCE] bg-white p-1.5 text-[#2B1E19] shadow-[0_15px_30px_rgba(43,30,25,0.12)] backdrop-blur-sm"
                     >
-                        <!-- Header Dropdown: Tên & Email -->
                         <div class="border-b border-[#EADBCE]/70 px-3.5 py-2.5">
                             <p class="text-xs font-bold text-[#2B1E19] truncate">{{ auth()->user()?->name }}</p>
                             <p class="text-[11px] text-[#A39284] truncate">{{ auth()->user()?->email }}</p>
                         </div>
 
-                        <!-- Menu Items -->
                         <div class="py-1 text-xs">
                             <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 rounded-xl px-3.5 py-2 text-[#736357] transition hover:bg-[#FAF5F1] hover:text-[#B38352]">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
@@ -145,7 +143,6 @@
                             </a>
                         </div>
 
-                        <!-- Logout Form -->
                         <div class="border-t border-[#EADBCE]/70 pt-1">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -162,7 +159,6 @@
 
             </div>
 
-            <!-- 4. Nút Toggle Mobile Menu -->
             <button 
                 @click="mobileOpen = !mobileOpen" 
                 class="rounded-xl border border-[#EADBCE] bg-white p-2 text-[#736357] transition hover:bg-[#FAF5F1] hover:text-[#2B1E19] lg:hidden focus:outline-none" 
@@ -177,7 +173,6 @@
             </button>
         </div>
 
-        <!-- 5. Navigation Menu Trên Di Động (Dropdown) -->
         <div 
             x-show="mobileOpen" 
             x-cloak 
@@ -189,12 +184,10 @@
             x-transition:leave-end="opacity-0 -translate-y-2"
             class="space-y-4 border-t border-[#EADBCE] bg-[#FAF5F1] py-5 lg:hidden"
         >
-            <!-- Navigation Links -->
             <nav class="flex flex-col gap-2.5 text-sm font-medium text-[#736357]">
                 @include('layouts.partials.nav-links')
             </nav>
 
-            <!-- User Info & Links trên Mobile -->
             <div class="flex flex-col gap-2 border-t border-[#EADBCE] pt-4">
                 <div class="flex items-center gap-3 px-1 py-1">
                     <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2B1E19] text-[#FAF5F1] text-xs font-bold">
