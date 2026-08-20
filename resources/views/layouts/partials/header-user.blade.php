@@ -1,6 +1,21 @@
-<header x-data="{ mobileOpen: false, userMenu: false }" class="sticky top-0 z-50 border-b border-[#EADBCE]/80 bg-[#FAF5F1]/95 text-[#2B1E19] backdrop-blur-md transition-all duration-200">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-20 items-center justify-between">
+<header x-data="{
+        mobileOpen: false,
+        userMenu: false,
+        cartCount: 0,
+        async fetchCartCount() {
+            try {
+                const res = await fetch('{{ url('/api/cart') }}', { headers: { Accept: 'application/json' } });
+                if (res.ok) {
+                    const json = await res.json();
+                    this.cartCount = (json.data ?? json)?.item_count ?? 0;
+                }
+            } catch (e) {}
+        }
+    }"
+    x-init="fetchCartCount()"
+    class="sticky top-0 z-50 border-b border-[#EADBCE]/80 bg-[#FAF5F1]/95 text-[#2B1E19] backdrop-blur-md transition-all duration-200">    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        
+    <div class="flex h-20 items-center justify-between">
             
             <!-- 1. Logo Thương Hiệu (Style Brew & Bite Artisan Cafe) -->
             <a href="{{ url('/') }}" class="group flex items-center gap-2.5 transition">
@@ -41,19 +56,41 @@
                 </button>
 
                 <!-- Nút Giỏ Hàng (Kèm Badge số lượng) -->
+                <div x-data="{ 
+                    count: 0,
+                    async init() {
+                        try {
+                            const res = await fetch('{{ url('/cart/data') }}', { credentials: 'same-origin' });
+                            if (res.ok) {
+                                const json = await res.json();
+                                this.count = json.cart?.items_count ?? json.cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
+                            }
+                        } catch (e) {}
+                    }
+                }" 
+                @cart-updated.window="
+                    count = $event.detail.cart?.items_count ?? $event.detail.cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? count + 1;
+                "
+                class="relative">
+                
                 <a 
-                    href="#" 
+                    href="{{ route('cart.index') }}" 
                     class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[#EADBCE] bg-white/80 text-[#736357] shadow-sm transition hover:border-[#B38352] hover:bg-[#FAF5F1] hover:text-[#B38352]" 
                     title="{{ __('Giỏ hàng') }}"
                 >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <!-- Badge số lượng món trong giỏ (nếu có) -->
-                    <span class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#B38352] text-[10px] font-bold text-white shadow-sm">
-                        0
+
+                    <span 
+                        x-show="count > 0" 
+                        x-text="count" 
+                        x-cloak
+                        class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#B38352] text-[10px] font-bold text-white shadow-sm transition-transform duration-200 scale-100"
+                    >
                     </span>
                 </a>
+            </div>
 
                 <!-- User Dropdown Menu -->
                 <div class="relative" @click.outside="userMenu = false">
@@ -169,12 +206,18 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 pt-2">
+                <div class="grid grid-cols-3 gap-2 pt-2">
                     <a href="{{ route('profile.edit') }}" class="rounded-xl border border-[#EADBCE] bg-white py-2 text-center text-xs font-semibold text-[#4A3B32] transition hover:bg-[#FAF5F1]">
                         {{ __('Hồ sơ') }}
                     </a>
                     <a href="{{ route('orders.index') }}" class="rounded-xl border border-[#EADBCE] bg-white py-2 text-center text-xs font-semibold text-[#4A3B32] transition hover:bg-[#FAF5F1]">
                         {{ __('Đơn hàng') }}
+                    </a>
+                    <a href="{{ route('cart.index') }}" class="relative rounded-xl border border-[#EADBCE] bg-white py-2 text-center text-xs font-semibold text-[#4A3B32] transition hover:bg-[#FAF5F1]">
+                        {{ __('Giỏ hàng') }}
+                        <span x-show="cartCount > 0" x-cloak
+                            class="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#B38352] px-1 text-[10px] font-bold text-white"
+                            x-text="cartCount"></span>
                     </a>
                 </div>
 
