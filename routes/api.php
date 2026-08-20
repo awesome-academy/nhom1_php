@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\SuggestionController as AdminSuggestionController;
 use App\Http\Controllers\Api\AuthController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
+use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\Api\SuggestionController;
 use Illuminate\Support\Facades\Route;
 
@@ -55,6 +57,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
         ->group(function () {
             Route::apiResource('categories', AdminCategoryController::class);
         });
+});
+
+// Product gallery management (Admin only)
+Route::prefix('admin')->middleware(['auth:sanctum', AdminMiddleware::class])->group(function (): void {
+    Route::post('products/{product}/images', [ProductImageController::class, 'store']);
+    Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy']);
 });
 
 // Categories (Public)

@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductImageController extends Controller
 {
-
     public function store(StoreProductImageRequest $request, Product $product): JsonResponse
     {
         $path = $request->file('image')->store("product-images/{$product->id}", 'public');
