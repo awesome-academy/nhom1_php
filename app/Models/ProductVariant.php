@@ -9,9 +9,14 @@ class ProductVariant extends Model
 {
     protected $fillable = ['product_id', 'name', 'variant_group', 'extra_price'];
 
-    protected $casts = [
-        'variant_group' => VariantGroup::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'variant_group' => VariantGroup::class,
+            'extra_price'   => 'decimal:2',
+        ];
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

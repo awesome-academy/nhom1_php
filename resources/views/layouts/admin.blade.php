@@ -22,7 +22,7 @@
 
             <main class="flex-1 p-4 sm:p-6 lg:p-8">
                 @if (session('success'))
-                    <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    <div class="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
                         {{ session('success') }}
                     </div>
                 @endif

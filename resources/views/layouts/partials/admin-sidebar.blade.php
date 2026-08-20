@@ -40,12 +40,13 @@
             {{ __('Categories') }}
         </a>
 
-         <span class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3.5 py-2.5 text-[#8A7767]" title="{{ __('Sắp ra mắt') }}">
+        <a href="{{ route('admin.products.index') }}"
+           class="flex items-center gap-3 rounded-md px-3 py-2 transition {{ request()->routeIs('admin.products.*') ? 'bg-amber-500 text-[#1b1b18] font-semibold' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 18h10M8 18V9m8 9V9M6 9a3 3 0 013-3 4 4 0 017 1 3 3 0 112 5H6a3 3 0 010-6z" />
             </svg>
             {{ __('Product') }}
-        </span>
+        </a>
 
         <span class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3.5 py-2.5 text-[#8A7767]" title="{{ __('Sắp ra mắt') }}">
             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
