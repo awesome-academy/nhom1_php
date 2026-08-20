@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductDetailResource;
 use App\Http\Resources\ProductListResource;
 use App\Http\Resources\RatingResource;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,15 +18,27 @@ class ProductController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Product::where('is_active', true)
-            ->with(['category', 'primaryImage']);
+            ->with(['category', 'primaryImage'])
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings');
 
+        if ($request->filled('search')) {
+            $search = (string) $request->string('search');
+            $query->where('name', 'like', "%{$search}%");
+        }
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
 
         if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
+            $category = Category::find($request->integer('category_id'));
+
+            if ($category) {
+                $query->whereIn('category_id', $category->getAllDescendantIds());
+            } else {
+                $query->where('category_id', $request->category_id);
+            }
         }
 
         if ($request->filled('min_price')) {
@@ -35,6 +48,15 @@ class ProductController extends Controller
             $query->where('price', '<=', (float) $request->max_price);
         }
 
+        if ($request->filled('min_rating')) {
+            $minRating = (float) $request->min_rating;
+            $query->whereRaw('(
+                                SELECT COALESCE(AVG(r.rating), 0)
+                                FROM ratings r
+                                WHERE r.product_id = products.id
+                             ) >= ?', [$minRating]);
+        }
+
         $sort = $request->query('sort', 'name_asc');
 
         match ($sort) {
@@ -42,6 +64,7 @@ class ProductController extends Controller
             'name_desc' => $query->orderBy('name', 'desc'),
             'price_asc' => $query->orderBy('price', 'asc'),
             'price_desc' => $query->orderBy('price', 'desc'),
+            'newest' => $query->orderBy('created_at', 'desc'),
             'rating_desc' => $query->orderByRaw('(
                                 SELECT COALESCE(AVG(r.rating), 0)
                                 FROM ratings r

@@ -1,7 +1,7 @@
 @php
     $navLinks = [
         ['label' => __('Trang chủ'), 'url' => url('/'), 'active' => request()->is('/')],
-        ['label' => __('Menu'), 'url' => '#', 'active' => request()->is('menu*')],
+        ['label' => __('Menu'), 'url' => route('menu.index'), 'active' => request()->routeIs('menu.*')],
         ['label' => __('Về chúng tôi'), 'url' => '#', 'active' => request()->is('about*')],
         ['label' => __('Liên hệ'), 'url' => '#', 'active' => request()->is('contact*')],
     ];
