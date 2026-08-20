@@ -72,7 +72,7 @@ class SendMonthlyOrderReport extends Command
             return Carbon::now()->subMonthNoOverflow()->startOfMonth();
         }
 
-        if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $option)) {
+        if (! preg_match('/^(?!0000)\d{4}-(0[1-9]|1[0-2])$/', (string) $option)) {
             $this->error(sprintf(
                 'Invalid --month value "%s". Expected format: YYYY-MM (e.g. 2026-08).',
                 $option,

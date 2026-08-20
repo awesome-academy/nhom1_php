@@ -140,7 +140,7 @@ class SendMonthlyOrderReportTest extends TestCase
 
                 return $report['month'] === '2026-08'
                     && $report['total_orders'] === 1
-                    && (float) $report['total_revenue'] === 200_000.0
+                    && $report['total_revenue'] === '200000.00'
                     && $report['total_products_sold'] === 4
                     && count($report['top_products']) === 1
                     && $report['top_products'][0]['product_name'] === 'Latte'
@@ -224,6 +224,16 @@ class SendMonthlyOrderReportTest extends TestCase
         Mail::fake();
 
         $this->artisan('report:monthly-orders', ['--month' => '2026-08-01'])
+            ->assertFailed();
+
+        Mail::assertNothingSent();
+    }
+
+    public function test_zero_year_month_format_returns_failure(): void
+    {
+        Mail::fake();
+
+        $this->artisan('report:monthly-orders', ['--month' => '0000-01'])
             ->assertFailed();
 
         Mail::assertNothingSent();

@@ -97,3 +97,13 @@ php artisan storage:link
 ```
 
 > Lệnh trên sẽ tạo symbolic link từ `public/storage` $\rightarrow$ `storage/app/public`, giúp ảnh upload được truy cập công khai qua đường dẫn URL trình duyệt.
+
+---
+
+## 6. Cấu Hình Laravel Scheduler
+
+Các tác vụ định kỳ được định nghĩa trong `routes/console.php` (bao gồm command `report:monthly-orders` được lên lịch chạy lúc 00:00 ngày đầu tiên của mỗi tháng) chỉ được kích hoạt trên môi trường server khi cron daemon gọi Laravel Scheduler mỗi phút:
+
+```bash
+* * * * * cd /path/to/nhom1_php && php artisan schedule:run >> /dev/null 2>&1
+```
