@@ -8,7 +8,7 @@
         </div>
         <div>
             <p class="text-xs font-semibold uppercase tracking-wider text-[#A39284]">{{ __('Danh mục gốc') }}</p>
-            <p class="font-serif text-2xl font-bold text-[#2B1E19]" x-text="stats.rootCount"></p>
+            <p class="font-sans text-xl font-bold text-[#2B1E19]" x-text="stats.rootCount"></p>
         </div>
     </div>
 
@@ -21,7 +21,7 @@
         </div>
         <div>
             <p class="text-xs font-semibold uppercase tracking-wider text-[#A39284]">{{ __('Nhóm con chi tiết') }}</p>
-            <p class="font-serif text-2xl font-bold text-[#2B1E19]" x-text="stats.subCount"></p>
+            <p class="font-sans text-xl font-bold text-[#2B1E19]" x-text="stats.subCount"></p>
         </div>
     </div>
 
@@ -34,7 +34,7 @@
         </div>
         <div>
             <p class="text-xs font-semibold uppercase tracking-wider text-[#A39284]">{{ __('Món đang phục vụ') }}</p>
-            <p class="font-serif text-2xl font-bold text-[#2B1E19]" x-text="stats.totalProducts + ' món'"></p>
+            <p class="font-sans text-xl font-bold text-[#2B1E19]" x-text="stats.totalProducts + ' món'"></p>
         </div>
     </div>
 </div>
