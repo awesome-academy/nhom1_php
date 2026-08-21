@@ -13,11 +13,18 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Symfony\Component\HttpFoundation\Response;
 
+use Illuminate\View\View; 
+
 /**
  * 98919 - Admin Order List / Detail / Status Transition APIs.
  */
 class AdminOrderController extends Controller
 {
+     public function manage(): View
+    {
+        return view('admin.orders.manage');
+    }
+    
     /**
      * GET /api/admin/orders
      * Danh sách tất cả orders (không giới hạn theo user).

@@ -214,4 +214,38 @@ class OrderService
         return (float) $product->price
             + (float) ($variant?->extra_price ?? 0);
     }
+
+    /**
+     * Admin cập nhật chuyển trạng thái đơn hàng và xử lý hoàn kho nếu hủy đơn.
+     */
+    public function adminTransitionStatus(int $orderId, OrderStatus $newStatus): Order
+    {
+        return DB::transaction(function () use ($orderId, $newStatus): Order {
+            $order = Order::query()
+                ->with(['items', 'user'])
+                ->lockForUpdate()
+                ->find($orderId);
+
+            if (! $order) {
+                throw (new ModelNotFoundException())
+                    ->setModel(Order::class, [$orderId]);
+            }
+
+            if ($order->status === OrderStatus::CANCELLED || $order->status === OrderStatus::COMPLETED) {
+                throw ValidationException::withMessages([
+                    'status' => ['Không thể chuyển đổi trạng thái cho đơn hàng đã hoàn tất hoặc đã huỷ.'],
+                ]);
+            }
+
+            $order->update([
+                'status' => $newStatus,
+            ]);
+
+            if ($newStatus === OrderStatus::CANCELLED) {
+                $this->restoreStock($order->items);
+            }
+
+            return $order->fresh(['items', 'user']);
+        });
+    }
 }

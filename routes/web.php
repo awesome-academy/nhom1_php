@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\CartController as ApiCartController;
 use App\Http\Controllers\Api\OrderController as ApiOrderController;
 
 
+
 Route::get('/', function () {
     return view('user/welcome');
 });

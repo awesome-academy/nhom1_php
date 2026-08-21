@@ -48,12 +48,13 @@
             {{ __('Product') }}
         </a>
 
-        <span class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3.5 py-2.5 text-[#8A7767]" title="{{ __('Sắp ra mắt') }}">
-            <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            {{ __('Orders') }}
-        </span>
+        <a href="{{ route('admin.orders.manage') }}"
+            class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium transition {{ request()->routeIs('admin.orders.*') ? 'bg-[#B38352] text-[#2B1E19] font-semibold shadow-sm' : 'text-[#C7B199] hover:bg-white/5 hover:text-white' }}">
+                <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                {{ __('Orders') }}
+        </a>
 
         <span class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3.5 py-2.5 text-[#8A7767]" title="{{ __('Sắp ra mắt') }}">
             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
