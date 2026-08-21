@@ -55,4 +55,10 @@ class CartItem extends Model
         return (float) $price * $this->quantity;
 
     }
+
+    public function getUnitPriceAttribute(): float
+    {
+        $this->loadMissing('product', 'productVariant');
+        return (float) (($this->product?->price ?? 0) + ($this->productVariant?->extra_price ?? 0));
+    }
 }
