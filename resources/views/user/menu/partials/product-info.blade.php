@@ -24,25 +24,25 @@
         <p class="text-sm leading-relaxed text-[#736357]">{{ $product->summary }}</p>
     @endif
 
-    <!-- Hiển thị Trạng thái tồn kho gọn gàng, đẹp mắt (Bỏ số lượng xx phần) -->
+    <!-- Hiển thị Trạng thái tồn kho-->
     <div>
         @if ($product->stock_quantity > 0)
-            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200/60 shadow-sm">
+            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200/70 shadow-sm">
                 <span class="relative flex h-2 w-2">
                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                     <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
                 </span>
-                <span>{{ __('Còn hàng') }}</span>
+                <span>{{ __('Còn hàng') }} - {{ __('còn') }} <b class="font-extrabold text-emerald-800">{{ $product->stock_quantity }}</b> {{ __('sản phẩm') }}</span>
             </div>
         @else
-            <div class="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 ring-1 ring-rose-200/60 shadow-sm">
+            <div class="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-700 ring-1 ring-rose-200/70 shadow-sm">
                 <span class="h-2 w-2 rounded-full bg-rose-500"></span>
                 <span>{{ __('Tạm hết hàng') }}</span>
             </div>
         @endif
     </div>
 
-    <!-- Tùy chọn đồ uống (Size/Đường/Đá chọn 1; Topping bật/tắt Toggle) -->
+    <!-- Tùy chọn đồ uống (Topping bật/tắt Toggle độc lập) -->
     @if ($variantGroups->isNotEmpty())
         <div class="space-y-4 border-t border-[#EADBCE]/70 pt-5">
             <h3 class="text-xs font-bold uppercase tracking-wider text-[#4A3B32]">{{ __('Tuỳ chọn đồ uống') }}</h3>
@@ -71,13 +71,13 @@
                                 <!-- Các nhóm còn lại (Size, Đường, Đá): Radio chọn 1 -->
                                 <label class="cursor-pointer">
                                     <input type="radio"
-                                        name="variant_{{ $groupKey }}"
-                                        value="{{ $variant->id }}"
-                                        data-group="{{ $groupKey }}"
-                                        data-extra="{{ $variant->extra_price }}"
-                                        class="peer sr-only"
-                                        @change="updateVariant('{{ $groupKey }}', {{ $variant->id }})"
-                                        {{ $loop->first ? 'checked' : '' }}>
+                                           name="variant_{{ $groupKey }}"
+                                           value="{{ $variant->id }}"
+                                           data-group="{{ $groupKey }}"
+                                           data-extra="{{ $variant->extra_price }}"
+                                           class="peer sr-only"
+                                           @change="updateVariant('{{ $groupKey }}', {{ $variant->id }})"
+                                           {{ $loop->first ? 'checked' : '' }}>
                                     <span class="block rounded-xl border border-[#EADBCE] bg-white px-3.5 py-2 text-xs font-semibold text-[#4A3B32] transition peer-checked:border-[#B38352] peer-checked:bg-[#B38352] peer-checked:text-white">
                                         {{ $variant->name }}
                                         @if ($variant->extra_price > 0)
@@ -93,7 +93,7 @@
         </div>
     @endif
 
-    <!-- Tăng/Giảm số lượng + Thêm vào giỏ -->
+    <!-- Số lượng + Thêm vào giỏ -->
     <div class="flex items-center gap-4 border-t border-[#EADBCE]/70 pt-5">
         <div class="flex items-center rounded-xl border border-[#EADBCE] bg-white">
             <button type="button" @click="quantity > 1 && quantity--" class="px-3 py-2.5 text-[#736357] transition hover:text-[#B38352]">−</button>
@@ -106,8 +106,14 @@
             <span x-show="adding">{{ __('Đang thêm...') }}</span>
         </button>
     </div>
-    <p x-show="cartMessage" x-text="cartMessage" class="text-xs font-semibold" :class="cartSuccess ? 'text-green-600' : 'text-red-600'"></p>
 
+    <div x-show="cartMessage" 
+     x-cloak 
+     x-transition 
+     class="mt-3 rounded-xl p-3 text-sm font-medium"
+     :class="cartSuccess ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'">
+    <span x-text="cartMessage"></span>
+    </div>
     <!-- Chia sẻ mạng xã hội -->
     <div class="flex items-center gap-2.5 border-t border-[#EADBCE]/70 pt-5">
         <span class="text-xs font-bold uppercase tracking-wider text-[#4A3B32]">{{ __('Chia sẻ') }}:</span>

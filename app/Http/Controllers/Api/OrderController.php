@@ -26,17 +26,21 @@ class OrderController extends Controller
     }
 
     // 98917 - User order history
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request)
     {
-        $perPage = min((int) $request->query('per_page', 15), 100);
+        $status = $request->query('status');
 
         $orders = Order::query()
             ->where('user_id', $request->user()->id)
-            ->withCount('items')
+        // Eager load thêm primaryImage
+            ->with(['items.product.primaryImage'])
+            ->when($status && $status !== 'all', function ($query) use ($status) {
+            $query->where('status', $status);
+        })
             ->latest()
-            ->paginate($perPage);
-
-        return OrderResource::collection($orders);
+            ->paginate(10);
+            
+        return view('user.orders.index', compact('orders'));
     }
 
     // 98917 - Order detail
@@ -72,4 +76,6 @@ class OrderController extends Controller
 
         return new OrderResource($order);
     }
+
+    
 }

@@ -26,6 +26,7 @@ class AdminOrderResource extends JsonResource
                     'id'    => $this->user->id,
                     'name'  => $this->user->name,
                     'email' => $this->user->email,
+                    'phone' => $this->user?->phone,
                 ]
             ),
             'created_at'   => $this->created_at,

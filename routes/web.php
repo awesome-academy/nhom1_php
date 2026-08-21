@@ -6,6 +6,11 @@ use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\MenuController;
 use App\Http\Controllers\Api\RatingController;
+use App\Http\Controllers\User\CartController;
+use App\Http\Controllers\Api\CartController as ApiCartController;
+use App\Http\Controllers\Api\OrderController as ApiOrderController;
+
+
 
 Route::get('/', function () {
     return view('user/welcome');
@@ -35,7 +40,19 @@ Route::middleware('auth')->group(function () {
     Route::put('/ratings/{rating}', [RatingController::class, 'update'])->name('ratings.update');
     Route::delete('/ratings/{rating}', [RatingController::class, 'destroy'])->name('ratings.destroy');
 
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::get('/cart/data', [ApiCartController::class, 'show'])->name('cart.data');
+    Route::post('/cart/items', [ApiCartController::class, 'storeItem'])->name('cart.items.store');
+    Route::put('/cart/items/{id}', [ApiCartController::class, 'updateItem'])->name('cart.items.update');
+    Route::delete('/cart/items/{id}', [ApiCartController::class, 'destroyItem'])->name('cart.items.destroy');
+    Route::delete('/cart/clear', [ApiCartController::class, 'clear'])->name('cart.clear');
+
+    Route::post('/checkout', [ApiOrderController::class, 'checkout'])->name('checkout');
+
+
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders', [ApiOrderController::class, 'index'])->name('orders.index');
+    Route::patch('/orders/{id}/cancel', [ApiOrderController::class, 'cancel'])->name('orders.cancel');
 });
 
 Route::prefix('auth')->group(function () {

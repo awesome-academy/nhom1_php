@@ -127,17 +127,17 @@ function productDetail() {
             this.adding = true;
             this.cartMessage = '';
             try {
-                const res = await fetch('{{ url('/api/cart/items') }}', {
+                const res = await fetch('{{ url('/cart/items') }}', { // Đổi sang /cart/items
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                     },
                     body: JSON.stringify({
                         product_id: productId,
-                        product_variant_id: this.selectedVariantId,
-                        toppings: this.selectedToppings, // Truyền kèm topping
+                        product_variant_id: this.selectedVariantId || null,
                         quantity: this.quantity,
                     }),
                 });
@@ -154,13 +154,17 @@ function productDetail() {
                 }
 
                 this.cartSuccess = true;
-                this.cartMessage = '{{ __('Đã thêm vào giỏ hàng!') }}';
+                this.cartMessage = '{{ __('Đã thêm vào giỏ hàng thành công!') }}';
+                
+                // Cập nhật sự kiện giỏ hàng cho Header (nếu có component Alpine đón nhận)
+                window.dispatchEvent(new CustomEvent('cart-updated', { detail: json }));
+
             } catch (e) {
                 this.cartSuccess = false;
                 this.cartMessage = e.message || '{{ __('Có lỗi xảy ra, vui lòng thử lại.') }}';
             } finally {
                 this.adding = false;
-                setTimeout(() => { this.cartMessage = ''; }, 3000);
+                setTimeout(() => { this.cartMessage = ''; }, 3500);
             }
         },
 

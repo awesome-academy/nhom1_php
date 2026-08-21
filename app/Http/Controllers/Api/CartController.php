@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateCartItemRequest;
 use App\Http\Resources\CartResource;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use App\Models\Cart;
 
 class CartController extends Controller
 {
@@ -15,8 +16,10 @@ class CartController extends Controller
     {
         $cart = CartService::getOrCreateForUser($request->user()->id);
 
-        $cart->load(['items.product', 'items.productVariant']);
-
+        $cart->load([
+            'items.product.images',
+            'items.productVariant',
+        ]);
         return new CartResource($cart);
     }
 
@@ -64,5 +67,54 @@ class CartController extends Controller
         $cart = CartService::clearCart($request->user()->id);
 
         return new CartResource($cart);
+    }
+
+    protected function loadCart(Request $request): Cart
+    {
+        return Cart::firstOrCreate(['user_id' => $request->user()->id])
+            ->load([
+                'items.product.images',       // Thêm eager-load images
+                'items.productVariant',
+            ]);
+    }
+
+    protected function formatCartResponse(Cart $cart): array
+    {
+        return [
+            'id' => $cart->id,
+            'user_id' => $cart->user_id,
+            'total_price' => (float) $cart->total_price,
+            'items_count' => $cart->items->sum('quantity'), // Đếm tổng số lượng items cho Badge
+            'items' => $cart->items->map(function ($item) {
+                // Lấy ảnh từ product->images hoặc image/thumbnail mặc định
+                $primaryImage = $item->product?->images?->first()?->image_path 
+                    ?? $item->product?->image 
+                    ?? null;
+
+                $imageUrl = $primaryImage 
+                    ? (filter_var($primaryImage, FILTER_VALIDATE_URL) ? $primaryImage : asset('storage/' . $primaryImage))
+                    : asset('images/default-food.png');
+
+                return [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
+                    'quantity' => (int) $item->quantity,
+                    'unit_price' => (float) $item->unit_price,
+                    'total_price' => (float) ($item->quantity * $item->unit_price),
+                    'product' => [
+                        'id' => $item->product?->id,
+                        'name' => $item->product?->name,
+                        'slug' => $item->product?->slug,
+                        'image_url' => $imageUrl, // Luôn trả về URL ảnh hợp lệ
+                    ],
+                    'variant' => $item->productVariant ? [
+                        'id' => $item->productVariant->id,
+                        'name' => $item->productVariant->name,
+                        'price' => (float) $item->productVariant->price,
+                    ] : null,
+                ];
+            }),
+        ];
     }
 }
