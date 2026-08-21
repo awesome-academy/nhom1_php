@@ -107,13 +107,7 @@
         </button>
     </div>
 
-    <div x-show="cartMessage" 
-     x-cloak 
-     x-transition 
-     class="mt-3 rounded-xl p-3 text-sm font-medium"
-     :class="cartSuccess ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'">
-    <span x-text="cartMessage"></span>
-    </div>
+    <p x-show="cartError" x-cloak x-text="cartError" class="mt-2 text-xs font-semibold text-rose-600"></p>
     <!-- Chia sẻ mạng xã hội -->
     <div class="flex items-center gap-2.5 border-t border-[#EADBCE]/70 pt-5">
         <span class="text-xs font-bold uppercase tracking-wider text-[#4A3B32]">{{ __('Chia sẻ') }}:</span>
