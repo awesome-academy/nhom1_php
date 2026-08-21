@@ -11,6 +11,10 @@ Route::get('/', function () {
     return view('user/welcome');
 });
 
+Route::get('/contact', function () {
+    return view('user.contact');
+})->name('contact');
+
 Route::get('/dashboard', function () {
     return view('user.dashboard');
     

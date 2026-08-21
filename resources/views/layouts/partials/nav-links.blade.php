@@ -3,7 +3,7 @@
         ['label' => __('Trang chủ'), 'url' => url('/'), 'active' => request()->is('/')],
         ['label' => __('Menu'), 'url' => route('menu.index'), 'active' => request()->routeIs('menu.*')],
         ['label' => __('Về chúng tôi'), 'url' => '#', 'active' => request()->is('about*')],
-        ['label' => __('Liên hệ'), 'url' => '#', 'active' => request()->is('contact*')],
+        ['label' => __('Liên hệ'), 'url' => route('contact'), 'active' => request()->routeIs('contact')],
     ];
 @endphp
 
