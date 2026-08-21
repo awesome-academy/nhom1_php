@@ -63,6 +63,7 @@
             </div>
         @endif
     </div>
+    @include('user.menu.partials.cart-success-modal')
 </div>
 
 <script>
@@ -125,9 +126,9 @@ function productDetail() {
 
         async addToCart(productId) {
             this.adding = true;
-            this.cartMessage = '';
+            this.cartError = '';
             try {
-                const res = await fetch('{{ url('/cart/items') }}', { // Đổi sang /cart/items
+                const res = await fetch('{{ url('/cart/items') }}', { 
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: {
@@ -153,18 +154,15 @@ function productDetail() {
                     throw new Error(json.message || Object.values(json.errors ?? {}).flat()[0] || '{{ __('Không thể thêm vào giỏ hàng.') }}');
                 }
 
+                // Mở Modal thành công & cập nhật badge Header
                 this.cartSuccess = true;
-                this.cartMessage = '{{ __('Đã thêm vào giỏ hàng thành công!') }}';
-                
-                // Cập nhật sự kiện giỏ hàng cho Header (nếu có component Alpine đón nhận)
                 window.dispatchEvent(new CustomEvent('cart-updated', { detail: json }));
 
             } catch (e) {
-                this.cartSuccess = false;
-                this.cartMessage = e.message || '{{ __('Có lỗi xảy ra, vui lòng thử lại.') }}';
+                this.cartError = e.message || '{{ __('Có lỗi xảy ra, vui lòng thử lại.') }}';
+                setTimeout(() => { this.cartError = ''; }, 3500);
             } finally {
                 this.adding = false;
-                setTimeout(() => { this.cartMessage = ''; }, 3500);
             }
         },
 

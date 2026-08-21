@@ -10,7 +10,7 @@
             </div>
             <div>
                 <div class="flex items-center gap-2">
-                    <p class="font-serif text-base font-bold text-[#2B1E19]" x-text="parent.name"></p>
+                    <p class="font-sans text-base font-bold text-[#2B1E19]" x-text="parent.name"></p>
                     <span class="inline-flex items-center rounded-md bg-[#FAF5F1] px-2 py-0.5 font-mono text-[11px] text-[#A39284] ring-1 ring-[#EADBCE]" x-text="'slug: ' + parent.slug"></span>
                 </div>
                 <p x-show="parent.description" class="mt-0.5 text-xs text-[#736357]" x-text="parent.description"></p>
