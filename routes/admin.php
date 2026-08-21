@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\AdminOrderController;
 
 
 use App\Http\Middleware\AdminMiddleware;
@@ -54,6 +55,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('products.images.destroy');
         Route::patch('products/{product}/images/{image}/primary', [AdminProductController::class, 'setPrimaryImage'])
             ->name('products.images.primary');
+
+        //Order management
+        Route::get('orders/manage', [AdminOrderController::class, 'manage'])
+            ->name('orders.manage');
+        Route::get('orders', [AdminOrderController::class, 'index'])
+            ->name('orders.index');
+        Route::get('orders/{id}', [AdminOrderController::class, 'show'])
+            ->name('orders.show');
+        Route::patch('orders/{id}/status', [AdminOrderController::class, 'updateStatus'])
+            ->name('orders.status');
 
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
