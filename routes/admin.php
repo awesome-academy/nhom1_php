@@ -69,7 +69,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Suggestion management
         Route::get('suggestions', [AdminSuggestionController::class, 'manage'])
-            ->name('suggestions.manage');
+            ->name('suggestions.manage'); 
+        Route::get('suggestions/data', [AdminSuggestionController::class, 'index'])
+            ->name('suggestions.index'); 
+        Route::put('suggestions/{id}', [AdminSuggestionController::class, 'update'])
+            ->name('suggestions.update');
 
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');

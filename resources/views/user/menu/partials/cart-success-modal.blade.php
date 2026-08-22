@@ -30,7 +30,7 @@
                 </svg>
             </div>
 
-            <h3 class="mt-5 font-sans text-xl font-bold text-[#2B1E19]">
+            <h3 class="mt-5 font-sans text-xl font-bold  text-emerald-600">
                 {{ __('Thêm vào giỏ thành công!') }}
             </h3>
             
