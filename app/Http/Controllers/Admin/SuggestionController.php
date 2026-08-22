@@ -8,9 +8,18 @@ use App\Http\Resources\AdminSuggestionResource;
 use App\Models\Suggestion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\View\View;
 
 class SuggestionController extends Controller
 {
+    /**
+     * Show the suggestion management page.
+     */
+    public function manage(): View
+    {
+        return view('admin.suggestions.manage');
+    }
+
     /**
      * Display a listing of all suggestions.
      */
