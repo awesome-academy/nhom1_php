@@ -39,6 +39,8 @@ class OrderService
 
             $this->deductStock($cart->items);
 
+            $cart->items()->delete();
+
             return $order->load('items');
         });
 
