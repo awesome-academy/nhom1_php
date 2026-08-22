@@ -9,12 +9,16 @@ use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\Api\CartController as ApiCartController;
 use App\Http\Controllers\Api\OrderController as ApiOrderController;
-
+use App\Http\Controllers\Api\SuggestionController;
 
 
 Route::get('/', function () {
     return view('user/welcome');
 });
+
+Route::get('/contact', function () {
+    return view('user.contact');
+})->name('contact');
 
 Route::get('/dashboard', function () {
     return view('user.dashboard');
@@ -49,6 +53,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders', [ApiOrderController::class, 'index'])->name('orders.index');
     Route::patch('/orders/{id}/cancel', [ApiOrderController::class, 'cancel'])->name('orders.cancel');
+
+    Route::get('/contact', function () {return view('user.contact.index');})->name('contact');
+    Route::post('/suggestions', [SuggestionController::class, 'store'])->name('suggestions.store');
 });
 
 Route::prefix('auth')->group(function () {

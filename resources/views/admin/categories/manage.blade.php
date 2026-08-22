@@ -5,10 +5,16 @@
 
     <!-- Header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <span class="block font-serif text-[11px] font-semibold tracking-[0.25em] text-[#B38352] uppercase">Brew &amp; Bite Menu Admin</span>
-            <h1 class="mt-1 font-serif text-2xl font-bold text-[#2B1E19] sm:text-3xl">{{ __('Phân Loại Thực Đơn') }}</h1>
-            <p class="mt-1 text-sm text-[#736357]">{{ __('Quản lý các nhóm món ăn, thức uống và phân cấp danh mục cho cửa hàng.') }}</p>
+        <div class="flex items-center gap-2.5">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FAF5F1] text-[#B38352] ring-1 ring-[#EADBCE]">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+            </span>
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-[#2B1E19]">{{ __('Phân loại thực đơn') }}</h1>
+                <p class="text-xs text-[#736357]">{{ __('Quản lý các nhóm món ăn, thức uống và phân cấp danh mục cho cửa hàng.') }}</p>
+            </div>
         </div>
         <button @click="openCreateModal()" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#2B1E19] px-5 py-3 text-sm font-bold text-[#FAF5F1] shadow-md transition hover:bg-[#B38352] active:scale-95">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">

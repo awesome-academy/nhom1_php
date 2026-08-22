@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\SuggestionController as AdminSuggestionController;
 
 
 use App\Http\Middleware\AdminMiddleware;
@@ -65,6 +66,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('orders.show');
         Route::patch('orders/{id}/status', [AdminOrderController::class, 'updateStatus'])
             ->name('orders.status');
+
+        // Suggestion management
+        Route::get('suggestions', [AdminSuggestionController::class, 'manage'])
+            ->name('suggestions.manage'); 
+        Route::get('suggestions/data', [AdminSuggestionController::class, 'index'])
+            ->name('suggestions.index'); 
+        Route::put('suggestions/{id}', [AdminSuggestionController::class, 'update'])
+            ->name('suggestions.update');
 
         Route::post('logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');

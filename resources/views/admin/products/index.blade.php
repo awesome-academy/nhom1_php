@@ -4,9 +4,16 @@
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-[#1b1b18]">{{ __('Quản lý sản phẩm') }}</h1>
-            <p class="mt-1 text-sm text-gray-500">{{ __('Quản lý toàn bộ món ăn, thức uống kèm hình ảnh, giá và tồn kho.') }}</p>
+        <div class="flex items-center gap-2.5">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FAF5F1] text-[#B38352] ring-1 ring-[#EADBCE]">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+            </span>
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-[#2B1E19]">{{ __('Quản lý sản phẩm') }}</h1>
+                <p class="text-xs text-[#736357]">{{ __('Quản lý toàn bộ món ăn, thức uống kèm hình ảnh, giá và tồn kho.') }}</p>
+            </div>
         </div>
 
         <a href="{{ route('admin.products.create') }}"
