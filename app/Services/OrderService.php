@@ -15,9 +15,14 @@ use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
-    public function checkout(int $userId): Order
-    {
-        $order = DB::transaction(function () use ($userId): Order {
+    public function checkout(
+        int $userId,
+        ?string $customerName = null,
+        ?string $phone = null,
+        ?string $address = null,
+        ?string $note = null
+    ): Order {
+        $order = DB::transaction(function () use ($userId, $customerName, $phone, $address, $note): Order {
             $cart = CartService::getOrCreateForUser($userId);
             $cart->load(['items.product', 'items.productVariant']);
 
@@ -30,15 +35,19 @@ class OrderService
             $this->validateCartItems($cart->items);
 
             $order = Order::create([
-                'user_id' => $userId,
-                'status' => OrderStatus::PENDING,
-                'total_amount' => round($cart->total(), 2),
+                'user_id'       => $userId,
+                'status'        => OrderStatus::PENDING,
+                'total_amount'  => round($cart->total(), 2),
+                'customer_name' => $customerName,
+                'phone'         => $phone,
+                'address'       => $address,
+                'note'          => $note,
             ]);
 
             $this->createOrderItems($order, $cart->items);
-
             $this->deductStock($cart->items);
 
+            // Xoá toàn bộ món trong giỏ hàng
             $cart->items()->delete();
 
             return $order->load('items');
@@ -49,7 +58,6 @@ class OrderService
         return $order;
     }
 
-    // 98918 - Cancel pending/confirmed order
     public function cancelOrder(int $userId, int $orderId): Order
     {
         return DB::transaction(function () use ($userId, $orderId): Order {
@@ -89,16 +97,13 @@ class OrderService
             );
 
             OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $cartItem->product_id,
+                'order_id'           => $order->id,
+                'product_id'         => $cartItem->product_id,
                 'product_variant_id' => $cartItem->product_variant_id,
-                'product_name' => $cartItem->product->name,
-                'unit_price' => round($unitPrice, 2),
-                'quantity' => $cartItem->quantity,
-                'subtotal' => round(
-                    $unitPrice * $cartItem->quantity,
-                    2
-                ),
+                'product_name'       => $cartItem->product->name,
+                'unit_price'         => round($unitPrice, 2),
+                'quantity'           => $cartItem->quantity,
+                'subtotal'           => round($unitPrice * $cartItem->quantity, 2),
             ]);
         }
     }
@@ -117,14 +122,9 @@ class OrderService
             if ($cartItem->product_variant_id !== null) {
                 $variant = $cartItem->productVariant;
 
-                if (
-                    ! $variant instanceof ProductVariant ||
-                    $variant->product_id !== $product->id
-                ) {
+                if (! $variant instanceof ProductVariant || $variant->product_id !== $product->id) {
                     throw ValidationException::withMessages([
-                        'product_variant_id' => [
-                            'Variant does not belong to this product.',
-                        ],
+                        'product_variant_id' => ['Variant does not belong to this product.'],
                     ]);
                 }
             }
@@ -135,13 +135,8 @@ class OrderService
 
     private function validateStock(Collection $cartItems): void
     {
-        foreach (
-            $this->quantitiesByProduct($cartItems)
-            as $productId => $totalQuantity
-        ) {
-            $product = Product::query()
-                ->lockForUpdate()
-                ->find($productId);
+        foreach ($this->quantitiesByProduct($cartItems) as $productId => $totalQuantity) {
+            $product = Product::query()->lockForUpdate()->find($productId);
 
             if (! $product instanceof Product || ! $product->is_active) {
                 throw ValidationException::withMessages([
@@ -159,78 +154,40 @@ class OrderService
 
     private function deductStock(Collection $cartItems): void
     {
-        foreach (
-            $this->quantitiesByProduct($cartItems)
-            as $productId => $totalQuantity
-        ) {
-            $product = Product::query()
-                ->lockForUpdate()
-                ->findOrFail($productId);
-
-            $product->decrement(
-                'stock_quantity',
-                $totalQuantity
-            );
+        foreach ($this->quantitiesByProduct($cartItems) as $productId => $totalQuantity) {
+            $product = Product::query()->lockForUpdate()->findOrFail($productId);
+            $product->decrement('stock_quantity', $totalQuantity);
         }
     }
 
     private function restoreStock(Collection $orderItems): void
     {
-        foreach (
-            $this->quantitiesByProduct($orderItems)
-            as $productId => $totalQuantity
-        ) {
-            $product = Product::query()
-                ->lockForUpdate()
-                ->find($productId);
-
-            if (! $product instanceof Product) {
-                continue;
-            }
-
-            $product->increment(
-                'stock_quantity',
-                $totalQuantity
-            );
+        foreach ($this->quantitiesByProduct($orderItems) as $productId => $totalQuantity) {
+            $product = Product::query()->lockForUpdate()->find($productId);
+            if (! $product instanceof Product) continue;
+            $product->increment('stock_quantity', $totalQuantity);
         }
     }
 
-    /**
-     * @return Collection<int, int>
-     */
     private function quantitiesByProduct(Collection $items): Collection
     {
-        return $items
-            ->groupBy('product_id')
-            ->map(
-                fn (Collection $group) => $group->sum(
-                    fn ($item) => (int) $item->quantity
-                )
-            );
+        return $items->groupBy('product_id')->map(
+            fn (Collection $group) => $group->sum(fn ($item) => (int) $item->quantity)
+        );
     }
 
-    private function resolveUnitPrice(
-        Product $product,
-        ?ProductVariant $variant
-    ): float {
-        return (float) $product->price
-            + (float) ($variant?->extra_price ?? 0);
+    private function resolveUnitPrice(Product $product, ?ProductVariant $variant): float
+    {
+        return (float) $product->price + (float) ($variant?->extra_price ?? 0);
     }
 
-    /**
-     * Admin cập nhật chuyển trạng thái đơn hàng và xử lý hoàn kho nếu hủy đơn.
-     */
     public function adminTransitionStatus(int $orderId, OrderStatus $newStatus): Order
     {
         return DB::transaction(function () use ($orderId, $newStatus): Order {
-            $order = Order::query()
-                ->with(['items', 'user'])
-                ->lockForUpdate()
-                ->find($orderId);
+            $order = Order::query()->with(['items', 'user'])->lockForUpdate()->find($orderId);
 
             if (! $order) {
-                throw (new ModelNotFoundException())
-                    ->setModel(Order::class, [$orderId]);
+                throw (new ModelNotFoundException())->setModel(Order::class, [$orderId]);
             }
 
             if ($order->status === OrderStatus::CANCELLED || $order->status === OrderStatus::COMPLETED) {
@@ -239,9 +196,7 @@ class OrderService
                 ]);
             }
 
-            $order->update([
-                'status' => $newStatus,
-            ]);
+            $order->update(['status' => $newStatus]);
 
             if ($newStatus === OrderStatus::CANCELLED) {
                 $this->restoreStock($order->items);
