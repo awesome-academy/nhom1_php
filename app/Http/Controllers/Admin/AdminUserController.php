@@ -11,17 +11,17 @@ use Illuminate\View\View;
 class AdminUserController extends Controller
 {
     /**
-     * Display a listing of all users, with basic search and role filtering.
+     * Hiển thị danh sách khách hàng (role = user).
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = User::where('role', 'user');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -31,13 +31,13 @@ class AdminUserController extends Controller
             default    => $query->latest(),
         };
 
-        $users = $query->paginate(10);
+        $users = $query->paginate(10)->withQueryString();
 
         return view('admin.users.index', compact('users'));
     }
 
     /**
-     * Show the form for editing a user.
+     * Mở form chỉnh sửa thông tin user.
      */
     public function edit(User $user): View
     {
@@ -47,25 +47,25 @@ class AdminUserController extends Controller
     }
 
     /**
-     * Update a user's basic info and role.
+     * Cập nhật thông tin cá nhân của user (không sửa email & role).
      */
     public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'role' => ['required', 'in:admin,user'],
+            'name'    => ['required', 'string', 'max:255'],
+            'phone'   => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
         ]);
 
         $user->update($validated);
 
         return redirect()
             ->route('admin.users.index')
-            ->with('success', 'Cập nhật người dùng thành công.');
+            ->with('success', __('Đã cập nhật thông tin người dùng thành công.'));
     }
 
     /**
-     * Remove a user from the system.
+     * Xóa người dùng khỏi hệ thống.
      */
     public function destroy(User $user): RedirectResponse
     {
@@ -73,6 +73,6 @@ class AdminUserController extends Controller
 
         return redirect()
             ->route('admin.users.index')
-            ->with('success', 'Đã xoá người dùng.');
+            ->with('success', __('Đã xoá người dùng thành công.'));
     }
 }

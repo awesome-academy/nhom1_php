@@ -87,7 +87,7 @@ class ProductSeeder extends Seeder
                 'description' => "【Product Summary】\nBột trà xanh Uji Kyoto nhập khẩu kết hợp sữa tươi thanh trùng béo ngậy.\n\n【Mô tả chi tiết】\nSử dụng 100% bột Matcha hữu cơ từ vùng Uji (Kyoto) đánh bọt thủ công bằng chasen tre truyền thống, hòa cùng sữa tươi thanh trùng tạo nên màu xanh tươi sáng, vị chát dịu và hậu vị ngọt thanh sâu lắng.",
                 'images' => [
                     'matcha-latte.jpg' => true,
-                    'matcha-detail.jpg' => false,
+                    'matcha-powder.jpg' => false,
                 ],
                 'variants' => [
                     ['variant_group' => 'size', 'name' => 'Size M', 'extra_price' => 0],

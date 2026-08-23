@@ -17,6 +17,7 @@
     </div>
 
     <nav class="flex-1 space-y-1 px-4 py-6 text-sm">
+        <!-- Dashboard -->
         <a href="{{ route('admin.dashboard') }}"
             class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium transition {{ request()->routeIs('admin.dashboard') ? 'bg-[#B38352] text-[#2B1E19] font-semibold shadow-sm' : 'text-[#C7B199] hover:bg-white/5 hover:text-white' }}">
             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,6 +27,7 @@
             {{ __('Dashboard') }}
         </a>
 
+        <!-- Users -->
         <a href="{{ route('admin.users.index') }}"
             class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium transition {{ request()->routeIs('admin.users.*') ? 'bg-[#B38352] text-[#2B1E19] font-semibold shadow-sm' : 'text-[#C7B199] hover:bg-white/5 hover:text-white' }}">
             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,6 +37,7 @@
             {{ __('Users') }}
         </a>
 
+        <!-- Categories -->
         <a href="{{ route('admin.categories.manage') }}"
             class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium transition {{ request()->routeIs('admin.categories.*') ? 'bg-[#B38352] text-[#2B1E19] font-semibold shadow-sm' : 'text-[#C7B199] hover:bg-white/5 hover:text-white' }}">
             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,15 +47,17 @@
             {{ __('Categories') }}
         </a>
 
+        <!-- Products (Đã sửa đồng bộ) -->
         <a href="{{ route('admin.products.index') }}"
-            class="flex items-center gap-3 rounded-md px-3 py-2 transition {{ request()->routeIs('admin.products.*') ? 'bg-amber-500 text-[#1b1b18] font-semibold' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
+            class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium transition {{ request()->routeIs('admin.products.*') ? 'bg-[#B38352] text-[#2B1E19] font-semibold shadow-sm' : 'text-[#C7B199] hover:bg-white/5 hover:text-white' }}">
             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M7 18h10M8 18V9m8 9V9M6 9a3 3 0 013-3 4 4 0 017 1 3 3 0 112 5H6a3 3 0 010-6z" />
             </svg>
-            {{ __('Product') }}
+            {{ __('Products') }}
         </a>
 
+        <!-- Orders -->
         <a href="{{ route('admin.orders.manage') }}"
             class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium transition {{ request()->routeIs('admin.orders.*') ? 'bg-[#B38352] text-[#2B1E19] font-semibold shadow-sm' : 'text-[#C7B199] hover:bg-white/5 hover:text-white' }}">
             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,6 +67,7 @@
             {{ __('Orders') }}
         </a>
 
+        <!-- Suggestions -->
         <a href="{{ route('admin.suggestions.manage') }}"
             class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium transition {{ request()->routeIs('admin.suggestions.*') ? 'bg-[#B38352] text-[#2B1E19] font-semibold shadow-sm' : 'text-[#C7B199] hover:bg-white/5 hover:text-white' }}">
             <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
