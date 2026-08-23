@@ -38,44 +38,30 @@
             </div>
         @endif
 
+        {{-- Filter Tabs được tách riêng từng bước --}}
         @php
             $currentStatus = request('status', 'all');
+            $statusTabs = [
+                'all'       => 'Tất cả',
+                'pending'   => 'Chờ nhận đơn',
+                'confirmed' => 'Đã tiếp nhận',
+                'preparing' => 'Đang làm món',
+                'completed' => 'Hoàn thành',
+                'cancelled' => 'Đã huỷ',
+            ];
         @endphp
 
         <div class="flex items-center gap-2 overflow-x-auto border-b border-[#EADBCE] pb-3 text-sm no-scrollbar">
-            {{-- Tất cả --}}
-            <a href="{{ route('orders.index', ['status' => 'all']) }}"
-            class="whitespace-nowrap rounded-xl px-4 py-2 font-semibold transition {{ $currentStatus === 'all' ? 'bg-[#4A3B32] text-white shadow-sm' : 'text-[#7A6E65] hover:bg-[#FAF5F1]' }}">
-                {{ __('Tất cả') }}
-            </a>
-
-            {{-- Chờ xử lý --}}
-            <a href="{{ route('orders.index', ['status' => 'processing']) }}"
-            class="whitespace-nowrap rounded-xl px-4 py-2 font-semibold transition {{ $currentStatus === 'processing' ? 'bg-[#4A3B32] text-white shadow-sm' : 'text-[#7A6E65] hover:bg-[#FAF5F1]' }}">
-                {{ __('Đang xử lý') }}
-            </a>
-
-            {{-- Đã xác nhận --}}
-            <a href="{{ route('orders.index', ['status' => 'confirmed']) }}"
-            class="whitespace-nowrap rounded-xl px-4 py-2 font-semibold transition {{ $currentStatus === 'confirmed' ? 'bg-[#4A3B32] text-white shadow-sm' : 'text-[#7A6E65] hover:bg-[#FAF5F1]' }}">
-                {{ __('Đã xác nhận') }}
-            </a>
-
-            {{-- Hoàn thành --}}
-            <a href="{{ route('orders.index', ['status' => 'completed']) }}"
-            class="whitespace-nowrap rounded-xl px-4 py-2 font-semibold transition {{ $currentStatus === 'completed' ? 'bg-[#4A3B32] text-white shadow-sm' : 'text-[#7A6E65] hover:bg-[#FAF5F1]' }}">
-                {{ __('Hoàn thành') }}
-            </a>
-
-            {{-- Đã huỷ --}}
-            <a href="{{ route('orders.index', ['status' => 'cancelled']) }}"
-            class="whitespace-nowrap rounded-xl px-4 py-2 font-semibold transition {{ $currentStatus === 'cancelled' ? 'bg-[#4A3B32] text-white shadow-sm' : 'text-[#7A6E65] hover:bg-[#FAF5F1]' }}">
-                {{ __('Đã huỷ') }}
-            </a>
+            @foreach ($statusTabs as $key => $label)
+                <a href="{{ route('orders.index', ['status' => $key]) }}"
+                   class="whitespace-nowrap rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition {{ $currentStatus === $key ? 'bg-[#4A3B32] text-white shadow-sm' : 'text-[#7A6E65] hover:bg-[#FAF5F1]' }}">
+                    {{ __($label) }}
+                </a>
+            @endforeach
         </div>
 
         {{-- Danh sách đơn hàng --}}
-        <div class="space-y-4">
+        <div class="mt-6 space-y-4">
             @forelse ($orders as $order)
                 @php
                     $statusConfig = [
@@ -85,24 +71,24 @@
                             'dot' => 'bg-amber-500',
                         ],
                         'confirmed' => [
-                            'label' => 'Đã nhận đơn',
-                            'class' => 'bg-blue-50 text-blue-700 border-blue-200/60',
-                            'dot' => 'bg-blue-500',
+                            'label' => 'Đã tiếp nhận',
+                            'class' => 'bg-sky-50 text-sky-700 border-sky-200/60',
+                            'dot' => 'bg-sky-500',
                         ],
                         'preparing' => [
                             'label' => 'Đang làm món',
-                            'class' => 'bg-orange-50 text-orange-700 border-orange-200/60',
-                            'dot' => 'bg-orange-500 animate-pulse',
+                            'class' => 'bg-indigo-50 text-indigo-700 border-indigo-200/60',
+                            'dot' => 'bg-indigo-500 animate-pulse',
                         ],
                         'completed' => [
-                            'label' => 'Giao thành công',
+                            'label' => 'Hoàn thành',
                             'class' => 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
                             'dot' => 'bg-emerald-500',
                         ],
                         'cancelled' => [
                             'label' => 'Đã huỷ',
-                            'class' => 'bg-gray-100 text-gray-600 border-gray-200',
-                            'dot' => 'bg-gray-400',
+                            'class' => 'bg-rose-50 text-rose-700 border-rose-200/60',
+                            'dot' => 'bg-rose-500',
                         ],
                     ];
 
@@ -113,14 +99,15 @@
                         'dot' => 'bg-gray-400'
                     ];
 
-                    $canCancel = in_array($statusValue, ['pending', 'confirmed'], true);
+                    // Chỉ cho phép huỷ khi còn ở bước chờ xác nhận (pending)
+                    $canCancel = in_array($statusValue, ['pending'], true);
                 @endphp
 
                 <div x-data="{ cancelling: false, cancelled: false }" 
                      x-show="!cancelled"
                      class="overflow-hidden rounded-2xl border border-[#F0EAE4] bg-white shadow-sm transition hover:shadow-md">
                     
-                    {{-- Header của mỗi Card Đơn hàng --}}
+                    {{-- Header Card Đơn hàng --}}
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#F6F2EE] bg-[#FAF8F5]/60 px-5 py-3.5 sm:px-6">
                         <div class="flex items-center gap-3">
                             <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F0EAE4] text-sm font-bold text-[#4A3B32]">
@@ -140,7 +127,7 @@
                         </div>
                     </div>
 
-                    {{-- Danh sách Item món ăn kèm ảnh --}}
+                    {{-- Danh sách Item món ăn --}}
                     <div class="divide-y divide-[#F6F2EE] px-5 sm:px-6">
                         @foreach ($order->items as $item)
                             @php
@@ -152,9 +139,9 @@
 
                             <div class="flex items-center gap-4 py-3.5">
                                 <img src="{{ $imageUrl }}" 
-                                    alt="{{ $item->product_name ?? ($item->product->name ?? 'Món ăn') }}" 
-                                    class="h-14 w-14 shrink-0 rounded-xl border border-[#EADBCE]/60 object-cover shadow-inner"
-                                    onerror="this.src='https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=200&auto=format&fit=crop'">
+                                     alt="{{ $item->product_name ?? ($item->product->name ?? 'Món ăn') }}" 
+                                     class="h-14 w-14 shrink-0 rounded-xl border border-[#EADBCE]/60 object-cover shadow-inner"
+                                     onerror="this.src='https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=200&auto=format&fit=crop'">
                                 
                                 <div class="flex min-w-0 flex-1 flex-col justify-center">
                                     <h4 class="truncate text-sm font-semibold text-[#2D221E]">
@@ -174,7 +161,7 @@
                         @endforeach
                     </div>
 
-                    {{-- Footer: Tổng tiền và Nút thao tác --}}
+                    {{-- Footer Card --}}
                     <div class="flex flex-wrap items-center justify-between gap-3 border-t border-[#F6F2EE] bg-[#FAF8F5]/30 px-5 py-4 sm:px-6">
                         <div class="flex items-baseline gap-1.5">
                             <span class="text-xs font-medium text-[#8C7E74]">{{ __('Tổng thanh toán:') }}</span>
@@ -200,24 +187,20 @@
                                             })
                                             .then(async (res) => { 
                                                 const data = await res.json();
-                                                if (!res.ok) {
-                                                    throw new Error(data.message || 'Huỷ đơn thất bại');
-                                                }
+                                                if (!res.ok) throw new Error(data.message || 'Huỷ đơn thất bại');
                                                 return data;
                                             })
-                                            .then(() => {
-                                                window.location.reload();
-                                            })
+                                            .then(() => { window.location.reload(); })
                                             .catch((err) => { 
                                                 cancelling = false; 
-                                                alert(err.message || '{{ __('Không thể huỷ đơn vào lúc này. Vui lòng liên hệ trực tiếp quán!') }}'); 
+                                                alert(err.message || '{{ __('Không thể huỷ đơn vào lúc này. Vui lòng liên hệ quán!') }}'); 
                                             });
                                         }
                                     "
                                     class="rounded-xl border border-red-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-red-600 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50">
-                                <span x-show="!cancelling">{{ __('Huỷ đơn') }}</span>
-                                <span x-show="cancelling">{{ __('Đang xử lý...') }}</span>
-                            </button>
+                                    <span x-show="!cancelling">{{ __('Huỷ đơn') }}</span>
+                                    <span x-show="cancelling">{{ __('Đang xử lý...') }}</span>
+                                </button>
                             @endif
 
                             <a href="{{ route('menu.index') }}" 
@@ -236,7 +219,7 @@
                     </div>
                     <h3 class="mt-4 text-base font-bold text-[#2D221E]">{{ __('Chưa có đơn hàng nào') }}</h3>
                     <p class="mt-1 max-w-sm text-xs text-[#8C7E74]">
-                        {{ request('status') ? __('Không tìm thấy đơn hàng nào ở trạng thái này.') : __('Bạn chưa đặt đơn nào tại Brew & Bite. Khám phá menu và thưởng thức nhé!') }}
+                        {{ request('status') && request('status') !== 'all' ? __('Không tìm thấy đơn hàng nào ở trạng thái này.') : __('Bạn chưa đặt đơn nào tại Brew & Bite. Khám phá menu và thưởng thức nhé!') }}
                     </p>
                     <a href="{{ route('menu.index') }}" 
                        class="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#B38352] px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition hover:bg-[#9B6E40]">

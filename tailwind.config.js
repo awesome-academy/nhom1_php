@@ -8,7 +8,20 @@ export default {
         "./storage/framework/views/*.php",
         "./resources/views/**/*.blade.php",
     ],
-
+    safelist: [
+        "bg-sky-600",
+        "hover:bg-sky-700",
+        "bg-indigo-600",
+        "hover:bg-indigo-700",
+        "bg-emerald-600",
+        "hover:bg-emerald-700",
+        "bg-rose-600",
+        "hover:bg-rose-700",
+        "text-white",
+        "text-rose-600",
+        "border-rose-200",
+        "bg-rose-50",
+    ],
     theme: {
         extend: {
             fontFamily: {
