@@ -31,8 +31,8 @@
                 <svg class="h-3.5 w-3.5 fill-current text-[#B38352]" viewBox="0 0 20 20">
                     <path d="M10 15l-5.878 3.09L5.64 11.545.762 7.41l6.09-.885L10 1l3.148 5.525 6.09.885-4.878 4.135 1.518 6.545z"/>
                 </svg>
-                <span x-text="Number(product.rating || 0).toFixed(1)"></span>
-                <span class="text-[#A39284]" x-text="`(${product.rating_count ?? 0})`"></span>
+                <span x-text="Number(product.rating_avg || 0).toFixed(1)"></span>
+                <span class="text-[#A39284]" x-text="`(${product.ratings_count ?? 0})`"></span>
             </div>
             <span class="font-sans text-base font-bold text-[#2B1E19]" x-text="formatPrice(product.price) + '₫'"></span>
         </div>

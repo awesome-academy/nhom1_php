@@ -49,12 +49,11 @@ class ProductController extends Controller
         }
 
         if ($request->filled('min_rating')) {
-            $minRating = (float) $request->min_rating;
-            $query->whereRaw('(
-                                SELECT COALESCE(AVG(r.rating), 0)
-                                FROM ratings r
-                                WHERE r.product_id = products.id
-                             ) >= ?', [$minRating]);
+            $minRating = (int) $request->min_rating;
+            $query->whereRaw(
+                '(SELECT COALESCE(AVG(r.rating), 0) FROM ratings r WHERE r.product_id = products.id) >= ?',
+                [$minRating]
+            );
         }
 
         $sort = $request->query('sort', 'name_asc');
